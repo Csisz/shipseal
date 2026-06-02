@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 18% 5%;
+    --foreground: 240 10% 96%;
+
+    --card: 240 18% 7%;
+    --card-foreground: 240 10% 96%;
+
+    --popover: 240 18% 7%;
+    --popover-foreground: 240 10% 96%;
+
+    --primary: 258 90% 66%;
+    --primary-foreground: 240 10% 98%;
+    --primary-glow: 270 95% 75%;
+
+    --secondary: 240 12% 12%;
+    --secondary-foreground: 240 10% 96%;
+
+    --muted: 240 12% 11%;
+    --muted-foreground: 240 5% 60%;
+
+    --accent: 190 95% 55%;
+    --accent-foreground: 240 18% 5%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 240 10% 98%;
+
+    --success: 150 80% 50%;
+    --success-foreground: 240 18% 5%;
+
+    --warning: 38 95% 58%;
+    --warning-foreground: 240 18% 5%;
+
+    --border: 240 14% 14%;
+    --input: 240 14% 14%;
+    --ring: 258 90% 66%;
+
+    --radius: 0.875rem;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(258 90% 66%), hsl(190 95% 55%));
+    --gradient-hero: radial-gradient(ellipse at top, hsl(258 90% 66% / 0.25), transparent 60%),
+                     radial-gradient(ellipse at bottom right, hsl(190 95% 55% / 0.18), transparent 55%),
+                     hsl(240 18% 5%);
+    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(258 90% 66% / 0.35), transparent 70%);
+    --gradient-card: linear-gradient(135deg, hsl(240 14% 9% / 0.8), hsl(240 14% 6% / 0.6));
+    --gradient-text: linear-gradient(135deg, hsl(240 10% 98%), hsl(270 95% 80%) 50%, hsl(190 95% 70%));
+
+    /* Shadows */
+    --shadow-glow: 0 0 60px hsl(258 90% 66% / 0.35);
+    --shadow-elegant: 0 20px 60px -20px hsl(258 90% 30% / 0.5);
+    --shadow-card: 0 8px 32px -8px hsl(240 18% 0% / 0.6);
+
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, hsl(258 90% 66% / 0.15), transparent),
+      radial-gradient(ellipse 60% 40% at 90% 20%, hsl(190 95% 55% / 0.08), transparent);
+    background-attachment: fixed;
+  }
+
+  /* Subtle grid background */
+  .bg-grid {
+    background-image:
+      linear-gradient(hsl(240 14% 14% / 0.4) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(240 14% 14% / 0.4) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent 75%);
+  }
+
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-card/40 backdrop-blur-xl border border-border/60;
+  }
+
+  .glass-strong {
+    @apply bg-card/70 backdrop-blur-2xl border border-border/80;
+  }
+
+  .text-gradient {
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .text-gradient-primary {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .glow-primary {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .ring-pulse::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: var(--gradient-primary);
+    opacity: 0.5;
+    filter: blur(12px);
+    z-index: -1;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.02em;
+  }
+  .font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+}
