@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const links = [
-  { label: 'How it works', href: '#how' },
-  { label: 'Score', href: '#score' },
-  { label: 'What you get', href: '#pack' },
-  { label: 'Safety', href: '#safety' },
+  { label: 'Generates', href: '#generates' },
+  { label: 'For whom', href: '#who' },
+  { label: 'Pricing', href: '#pricing' },
+  { label: 'Disclaimer', href: '#disclaimer' },
 ];
 
 export function Nav() {

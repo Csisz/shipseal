@@ -52,6 +52,14 @@ Use the sample to review the quality of the generated Delivery Pack without call
 
 The sample is intentionally not perfect. The generated pack should surface missing red-team documentation, transparency notice review, personal data/privacy review, MCP as a future governance item, and legal review recommendations. See [Sample Delivery Pack Review](docs/SAMPLE_DELIVERY_PACK_REVIEW.md) for the full review checklist.
 
+## MVP Validation Offer
+
+The first offer to validate is simple: ShipSeal turns an AI prototype or client automation repository into a client-ready Delivery Pack before handoff.
+
+Target users are AI freelancers, small AI agencies, no-code/low-code AI builders, indie SaaS teams, and consultants delivering AI automations to clients. The pilot packages being tested are Free Preview, Starter Report at 49 EUR, Pro Agency Report at 149 EUR, and Founder-reviewed Audit at 499 EUR+.
+
+To demo the offer, open the sample project, load the demo intake, download the Delivery Pack, and walk through the client handoff report, AI Act readiness files, eval/red-team tests, skills pack, MCP governance, and `score.json`.
+
 ## Validate Locally
 
 ```bash
