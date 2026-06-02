@@ -26,7 +26,25 @@ describe('ShipSeal print-ready client report HTML', () => {
     expect(html).toContain('Testing and eval summary');
     expect(html).toContain('30/60/90 day next steps roadmap');
     expect(html).toContain('ShipSeal does not provide legal advice');
+    expect(html).toContain('MCP readiness is a separate governance dimension');
+    expect(html).not.toContain('Human approval was not indicated');
+    expect(html).not.toContain('Enterprise MCP Ready');
     expect(html).toContain('@page');
+  });
+
+  it('uses cautious wording when human approval is unknown or not provided', () => {
+    const report = buildSampleProjectReadinessReport();
+    const html = generateClientReportHtml({
+      intake: {
+        ...SAMPLE_PROJECT_INTAKE,
+        hasHumanApproval: false,
+      },
+      scoreJson: buildScoreJson(report),
+    });
+
+    expect(html).toContain('Human approval status was not provided in the intake');
+    expect(html).not.toContain('no human approval');
+    expect(html).not.toContain('No human approval');
   });
 
   it('exports CLIENT_HANDOFF_REPORT.html into the Delivery Pack ZIP', async () => {
@@ -51,5 +69,6 @@ describe('ShipSeal print-ready client report HTML', () => {
     expect(html).toContain('AI Act readiness pre-screen');
     expect(html).toContain('Testing and eval summary');
     expect(html).toContain('ShipSeal does not provide legal advice');
+    expect(html).toContain('MCP readiness is a separate governance dimension');
   });
 });

@@ -38,6 +38,7 @@ Open the generated Delivery Pack ZIP and review these files first:
 - `05-ai-act-readiness/TRANSPARENCY_NOTICE_DRAFT.md`
 - `05-ai-act-readiness/LEGAL_REVIEW_QUESTIONS.md`
 - `06-client-handoff/CLIENT_HANDOFF_REPORT.md`
+- `06-client-handoff/CLIENT_HANDOFF_REPORT.html`
 - `06-client-handoff/EXECUTIVE_SUMMARY.md`
 - `06-client-handoff/NEXT_STEPS_ROADMAP.md`
 - `02-skills/code-review/SKILL.md`
@@ -59,6 +60,8 @@ Open the generated Delivery Pack ZIP and review these files first:
 - Includes a 30/60/90 day roadmap.
 - Includes the disclaimer that it is not legal advice and not a production security audit.
 - Avoids claiming legal compliance, security certification, or production approval.
+
+`CLIENT_HANDOFF_REPORT.html` is the print-ready version. Open it in a browser and use Print / Save as PDF when a client-ready PDF is needed. Do not use full dashboard printing as a substitute for this report.
 
 ## Expected Red Flags
 
@@ -90,8 +93,10 @@ The sample output is demo-capable when:
 3. In Project Intake, click `Load demo project`.
 4. Confirm the intake fields populate with `Customer Support RAG Assistant`.
 5. Review the Delivery Pack preview.
-6. Click `Download ShipSeal Delivery Pack`.
-7. Review the files listed above.
+6. Click `Open HTML report and save as PDF` and confirm the standalone report opens.
+7. Use browser Print / Save as PDF if a PDF is needed.
+8. Click `Download ShipSeal Delivery Pack`.
+9. Review the files listed above.
 
 ## Automated Validation
 

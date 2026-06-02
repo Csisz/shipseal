@@ -25,7 +25,7 @@ function generateAiActChecklist(intake: ProjectIntake) {
       ? '- Data protection warning: Personal data handling was indicated. GDPR/data protection review may be required.'
       : '- Data protection warning: Personal data handling was not indicated in intake.',
     !intake.hasHumanApproval
-      ? '- Human oversight warning: No human approval was indicated. Treat this as a delivery risk until an oversight path is confirmed.'
+      ? '- Human oversight warning: Human approval status was not provided in the intake. Confirm an oversight path before client delivery.'
       : '- Human oversight warning: Human approval was indicated in intake.',
   ];
 

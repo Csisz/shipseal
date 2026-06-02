@@ -41,8 +41,11 @@ export function DeliveryPackPreview({ report, intake }: Props) {
             variant="outline"
             className="border-border/80"
           >
-            <FileText className="h-4 w-4 mr-2" /> Open print-ready report
+            <FileText className="h-4 w-4 mr-2" /> Open HTML report and save as PDF
           </Button>
+          <p className="max-w-xs text-xs text-muted-foreground leading-relaxed">
+            This opens a standalone HTML client report. Open it in your browser and use Print / Save as PDF to create a PDF.
+          </p>
           <Button
             onClick={() => downloadAgentPackZip(
               report.repoName,
@@ -62,9 +65,15 @@ export function DeliveryPackPreview({ report, intake }: Props) {
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         <PreviewMetric label="ShipSeal score" value={`${report.score}/100`} />
         <PreviewMetric label="Go/no-go category" value={goNoGo} />
-        <PreviewMetric label="MCP readiness" value={report.mcpReadiness.status || 'Not detected'} />
+        <PreviewMetric label="MCP readiness" value={displayMcpReadiness(report.mcpReadiness.status)} />
         <PreviewMetric label="Output files" value={`${requiredPaths.length} required`} />
       </div>
+
+      {intakeCompletenessWarning(normalizedIntake) && (
+        <div className="mb-5 rounded-lg border border-warning/35 bg-warning/10 px-4 py-3 text-sm text-warning">
+          Client report quality improves when project intake fields are completed.
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-3 gap-4 mb-5">
         <StatusPanel
@@ -163,7 +172,7 @@ function previewRisks(report: ReadinessReport, intake: ReturnType<typeof normali
   const risks = report.blockers.slice(0, 4).map(blocker => blocker.title || 'Critical blocker');
   if (intake.handlesPersonalData) risks.push('Personal data review may be needed');
   if (intake.usedInEU && intake.generatesUserFacingContent) risks.push('Transparency notice recommended');
-  if (!intake.hasHumanApproval) risks.push('Human approval not confirmed');
+  if (!intake.hasHumanApproval) risks.push('Human approval status unknown');
   return risks.length ? risks : ['No major risks detected from available scan and intake data'];
 }
 
@@ -182,4 +191,25 @@ function testingStatusText(report: ReadinessReport) {
 function clientHandoffStatusText(intake: ReturnType<typeof normalizeProjectIntake>) {
   const client = intake.clientName?.trim() || 'client';
   return `Client handoff report, executive summary, and 30/60/90 roadmap are ready for ${client}.`;
+}
+
+function intakeCompletenessWarning(intake: ReturnType<typeof normalizeProjectIntake>) {
+  const requiredText = [
+    intake.clientName,
+    intake.agencyName,
+    intake.appDescription,
+    intake.targetUsers,
+    intake.aiUseCase,
+  ];
+  const missingText = requiredText.some(value => !value?.trim());
+  const missingRiskSignals = !intake.usedInEU && !intake.handlesPersonalData && !intake.generatesUserFacingContent && !intake.hasHumanApproval;
+
+  return missingText || missingRiskSignals;
+}
+
+function displayMcpReadiness(status?: string) {
+  if (!status) return 'Not detected';
+  if (/Enterprise MCP Ready/i.test(status)) return 'MCP Governance Ready';
+  if (/MCP Ready/i.test(status)) return 'Strong MCP readiness signal';
+  return status;
 }

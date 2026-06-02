@@ -233,7 +233,7 @@ function topRisks(summary: HandoffScoreSummary, intake: ProjectIntake) {
   if (summary.isReady === false && !risks.length) risks.push('The project is not currently marked ready for client handoff by the ShipSeal readiness rule.');
   if (intake.handlesPersonalData) risks.push('Personal data handling was indicated. Ask the client owner to confirm privacy/GDPR review before production use.');
   if (intake.usedInEU && intake.generatesUserFacingContent) risks.push('EU use with user-facing AI output was indicated. Review and adapt the transparency notice before client delivery.');
-  if (!intake.hasHumanApproval) risks.push('Human approval was not indicated. Assign an accountable reviewer before relying on AI output for important decisions.');
+  if (!intake.hasHumanApproval) risks.push('Human approval status was not provided in the intake. Confirm reviewer ownership before relying on AI output for important decisions.');
 
   return risks.length ? risks : ['No major handoff risks were detected from the available scan and intake data.'];
 }
@@ -258,7 +258,7 @@ function testingStatus(summary: HandoffScoreSummary) {
 function goNoGoRecommendation(summary: HandoffScoreSummary, intake: ProjectIntake) {
   if (summary.criticalBlockers.length > 0) return 'No-Go for unsupervised delivery until critical blockers are resolved or formally accepted.';
   if (summary.isReady === true && intake.hasHumanApproval) return 'Go for controlled handoff with documented human approval and standard review.';
-  if (summary.isReady === true) return 'Conditional Go for handoff; add human approval ownership before production use.';
+  if (summary.isReady === true) return 'Conditional Go for handoff; confirm human approval ownership before production use.';
   return 'Conditional Go for discovery or remediation only; not recommended for production handoff yet.';
 }
 

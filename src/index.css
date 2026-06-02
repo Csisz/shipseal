@@ -139,3 +139,20 @@
     font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   }
 }
+
+.dashboard-print-warning {
+  display: none;
+}
+
+@media print {
+  .dashboard-print-warning {
+    display: block;
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+    color: #344054;
+    background: #f9fafb;
+    font: 13px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+}

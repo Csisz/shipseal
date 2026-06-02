@@ -38,9 +38,10 @@ Vite defaults to port `8080`. If that port is busy, Vite may choose another port
 3. Upload a small non-sensitive repository ZIP or use the sample report.
 4. Fill the Project Intake fields with realistic client/project details.
 5. Review the ShipSeal score, go/no-go status, risks, and Delivery Pack preview.
-6. Click `Download ShipSeal Delivery Pack`.
-7. Open the ZIP and review `06-client-handoff/CLIENT_HANDOFF_REPORT.md`, `04-testing/EVAL_TEST_CASES.md`, `04-testing/RED_TEAM_PROMPTS.md`, `05-ai-act-readiness/TRANSPARENCY_NOTICE_DRAFT.md`, and `score.json`.
-8. Run `npm run test` and `npm run build` before sharing the demo.
+6. Click `Open HTML report and save as PDF` to review the standalone print-ready client report.
+7. Click `Download ShipSeal Delivery Pack`.
+8. Open the ZIP and review `06-client-handoff/CLIENT_HANDOFF_REPORT.md`, `06-client-handoff/CLIENT_HANDOFF_REPORT.html`, `04-testing/EVAL_TEST_CASES.md`, `04-testing/RED_TEAM_PROMPTS.md`, `05-ai-act-readiness/TRANSPARENCY_NOTICE_DRAFT.md`, and `score.json`.
+9. Run `npm run test` and `npm run build` before sharing the demo.
 
 For the full manual checklist, see [ShipSeal Demo Validation](docs/SHIPSEAL_DEMO_VALIDATION.md).
 
@@ -50,7 +51,7 @@ ShipSeal includes a dogfooding sample for a realistic `Customer Support RAG Assi
 
 Use the sample to review the quality of the generated Delivery Pack without calling an external AI API or backend service. In the UI, run a normal scan or open the sample report, then click `Load demo project` in the Project Intake panel. Download the ShipSeal Delivery Pack and review the client handoff report, print-ready HTML report, AI Act readiness files, eval/red-team tests, skills pack, MCP governance notes, repo context, and `score.json`.
 
-To review the print-ready report, click `Open print-ready report` in the Delivery Pack preview or open `06-client-handoff/CLIENT_HANDOFF_REPORT.html` from the downloaded ZIP. Use the browser print dialog and choose `Save as PDF` to create a PDF. Before sending it to a client, confirm the intake fields, score, risks, AI Act pre-screen, testing summary, next steps roadmap, and disclaimer are appropriate for the project.
+To review the print-ready report, click `Open HTML report and save as PDF` in the Delivery Pack preview or open `06-client-handoff/CLIENT_HANDOFF_REPORT.html` from the downloaded ZIP. This is intentionally PDF-ready HTML, not a built-in PDF engine. Use the browser print dialog and choose `Save as PDF` to create a PDF. Printing the full dashboard is not the client-report export path. Before sending it to a client, complete the intake fields and confirm the score, risks, AI Act pre-screen, testing summary, next steps roadmap, and disclaimer are appropriate for the project.
 
 The sample is intentionally not perfect. The generated pack should surface missing red-team documentation, transparency notice review, personal data/privacy review, MCP as a future governance item, and legal review recommendations. See [Sample Delivery Pack Review](docs/SAMPLE_DELIVERY_PACK_REVIEW.md) for the full review checklist.
 

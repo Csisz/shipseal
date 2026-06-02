@@ -48,6 +48,9 @@ export function ResultDashboard({ report, history, onReset, onClearHistory }: Pr
 
   return (
     <section className="container py-12 md:py-16 animate-fade-in-up">
+      <div className="dashboard-print-warning">
+        For a client-ready PDF, use the print-ready report export instead of printing this dashboard.
+      </div>
       <div className="glass rounded-3xl p-6 md:p-10 mb-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-glow opacity-30 pointer-events-none" />
         <div className="relative flex flex-col lg:flex-row lg:items-center gap-8">
@@ -69,7 +72,7 @@ export function ResultDashboard({ report, history, onReset, onClearHistory }: Pr
               <SummaryTile label="Score" value={`${report.score}/100`} />
               <SummaryTile label="Status" value={displayReadinessLevel(readiness.level)} />
               <SummaryTile label="Blockers" value={String(report.blockers.length)} />
-              <SummaryTile label="Generated files" value={`${report.agentPack.length} core + ${report.mcpReadiness.generatedFiles.length} MCP`} />
+              <SummaryTile label="Delivery Pack" value="Full Delivery Pack: 27 required outputs" />
             </div>
 
             <div className={`mt-6 rounded-2xl p-5 border ${ready ? 'bg-success/10 border-success/30' : report.blockers.length ? 'bg-destructive/10 border-destructive/30' : 'bg-warning/10 border-warning/30'}`}>
@@ -245,11 +248,11 @@ export function ResultDashboard({ report, history, onReset, onClearHistory }: Pr
         <div className="flex flex-wrap items-center gap-3 mb-3">
           <ShieldCheck className="h-4 w-4 text-primary-glow" />
           <h3 className="font-display font-semibold">MCP Readiness</h3>
-          <Badge variant="outline" className="border-primary/40 text-primary-glow">{report.mcpReadiness.status}</Badge>
+          <Badge variant="outline" className="border-primary/40 text-primary-glow">{displayMcpReadiness(report.mcpReadiness.status)}</Badge>
           <span className="ml-auto font-mono text-sm text-foreground/90">{report.mcpReadiness.score}/100</span>
         </div>
         <p className="text-sm text-muted-foreground max-w-3xl">
-          {report.mcpReadiness.aiNarrative?.mcpSummary || report.mcpReadiness.summary}
+          {mcpGovernanceSummary(report)}
         </p>
         {report.mcpReadiness.aiNarrative && (
           <div className="mt-3 rounded-lg border border-border/60 bg-secondary/25 p-3 text-xs text-muted-foreground">
@@ -297,7 +300,7 @@ export function ResultDashboard({ report, history, onReset, onClearHistory }: Pr
           </div>
         </div>
         <div className="mt-4 text-sm font-medium text-foreground/90">
-          Repo Ready &rarr; Agent Ready &rarr; MCP Ready &rarr; Enterprise Agent Governance
+          ShipSeal readiness remains the primary handoff signal. MCP readiness is a separate governance dimension for tool access and requires human approval for high-risk categories.
         </div>
         <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
           {report.mcpReadiness.generatedFiles.map(file => (
@@ -436,7 +439,7 @@ function RecentScans({ history, onClear }: { history: ScanHistoryItem[]; onClear
               <div className="mt-1 flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
                 <span>MCP</span>
                 <span className="font-mono">{item.mcpScore}/100</span>
-                <span className="truncate">{item.mcpStatus}</span>
+                <span className="truncate">{displayMcpReadiness(item.mcpStatus)}</span>
               </div>
             </div>
           ))}
@@ -444,6 +447,18 @@ function RecentScans({ history, onClear }: { history: ScanHistoryItem[]; onClear
       )}
     </div>
   );
+}
+
+function displayMcpReadiness(status?: string) {
+  if (!status) return 'Not detected';
+  if (/Enterprise MCP Ready/i.test(status)) return 'MCP Governance Ready';
+  if (/MCP Ready/i.test(status)) return 'Strong MCP readiness signal';
+  return status;
+}
+
+function mcpGovernanceSummary(report: ReadinessReport) {
+  const base = report.mcpReadiness.aiNarrative?.mcpSummary || report.mcpReadiness.summary;
+  return `${base} MCP readiness is separate from the main ShipSeal score; it does not mean production-ready status, and high-risk MCP tool categories require human approval.`;
 }
 
 function Row({ label, value }: { label: string; value: string }) {

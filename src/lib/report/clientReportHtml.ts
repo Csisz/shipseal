@@ -1,4 +1,4 @@
-import type { ClientReportHtmlInput, ClientReportSummary } from './types';
+﻿import type { ClientReportHtmlInput, ClientReportSummary } from './types';
 
 const LEGAL_DISCLAIMER = 'ShipSeal does not provide legal advice. This report is a technical, product-side and preliminary readiness assessment. It is not a formal legal opinion, production security audit or compliance certification.';
 const HU_DISCLAIMER = 'A ShipSeal nem nyújt jogi tanácsadást. Ez a riport technikai, termékoldali és előzetes readiness értékelés.';
@@ -389,7 +389,7 @@ function risksFromScore(score: Record<string, unknown>, intake: ClientReportHtml
     risks.push('Personal data signal: privacy/GDPR review may be required.');
   }
   if (!intake.hasHumanApproval) {
-    risks.push('Human approval was not indicated: assign an accountable reviewer before production use.');
+    risks.push('Human approval status was not provided in the intake. Confirm reviewer ownership before client delivery.');
   }
   if (arrayValue(score.improvements).some(item => /legal|transparency|red-team|mcp/i.test(JSON.stringify(item)))) {
     risks.push('Open improvement items include governance, legal, transparency, MCP, or red-team follow-up.');
@@ -418,8 +418,13 @@ function mcpSummary(score: Record<string, unknown>) {
   const mcp = asRecord(score.mcpReadiness);
   const status = stringValue(mcp.status) || stringValue(asRecord(score.repoContextPack).mcpStatus) || 'Not detected';
   const summary = stringValue(mcp.summary);
+  const displayStatus = displayMcpReadiness(status);
 
-  return summary || `MCP readiness status: ${status}. Review MCP allowlist, server recommendations, and security policy before enabling tools.`;
+  if (summary) {
+    return `${summary} MCP readiness is a separate governance dimension and does not mean production-ready status. High-risk MCP categories require human approval.`;
+  }
+
+  return `MCP readiness status: ${displayStatus}. MCP readiness is a separate governance dimension and does not mean production-ready status. Review MCP allowlist, server recommendations, security policy, and human approval before enabling high-risk tools.`;
 }
 
 function scanSummaryText(scanSummaryValue: unknown) {
@@ -468,4 +473,10 @@ function stringValue(value: unknown): string | undefined {
 
 function numeric(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+}
+
+function displayMcpReadiness(status: string) {
+  if (/Enterprise MCP Ready/i.test(status)) return 'MCP Governance Ready';
+  if (/MCP Ready/i.test(status)) return 'Strong MCP readiness signal';
+  return status;
 }

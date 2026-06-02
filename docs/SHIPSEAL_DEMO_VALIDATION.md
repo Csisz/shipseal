@@ -46,6 +46,8 @@ npm run dev
 - `aiProvider` and `modelName`: provider/model planned or currently used.
 - `clientName` and `agencyName`: optional white-label context.
 
+Client report quality improves when the intake is complete. For a real demo, fill the project, client, agency, app description, target users, AI use case, EU/personal data/user-facing output, human approval, provider, and model fields before opening the client report.
+
 9. Review the preview panel after the scan:
 
 - Confirm the ShipSeal score is visible.
@@ -53,20 +55,27 @@ npm run dev
 - Confirm main risks are visible or show a sensible fallback.
 - Confirm AI Act readiness, testing pack, and client handoff status cards are visible.
 - Confirm the required Delivery Pack file list is visible.
+- Confirm the print-ready report helper explains that the HTML report can be opened in a browser and saved as PDF.
 
-10. Click `Download ShipSeal Delivery Pack`.
+10. Click `Open HTML report and save as PDF`.
 
-11. Confirm the downloaded ZIP filename starts with `shipseal-delivery-pack-`.
+11. Confirm the standalone HTML report opens. Use browser Print / Save as PDF if a PDF is needed.
 
-12. Open the ZIP locally and inspect the folder structure.
+12. Do not treat full dashboard printing as the client report export path. Use the print-ready HTML report for client-ready PDF output.
 
-13. Open `06-client-handoff/CLIENT_HANDOFF_REPORT.md`.
+13. Click `Download ShipSeal Delivery Pack`.
 
-14. Confirm the report is readable for a client or AI freelancer, not only for a developer.
+14. Confirm the downloaded ZIP filename starts with `shipseal-delivery-pack-`.
 
-15. Confirm the report includes the project name, score summary, go/no-go recommendation, risks, testing status, AI Act pre-screen, MCP readiness summary, 30/60/90 day roadmap, and disclaimer.
+15. Open the ZIP locally and inspect the folder structure.
 
-16. Run automated validation before finishing the demo review.
+16. Open `06-client-handoff/CLIENT_HANDOFF_REPORT.md` and `06-client-handoff/CLIENT_HANDOFF_REPORT.html`.
+
+17. Confirm both reports are readable for a client or AI freelancer, not only for a developer.
+
+18. Confirm the reports include the project name, score summary, go/no-go recommendation, risks, testing status, AI Act pre-screen, MCP readiness summary, 30/60/90 day roadmap, and disclaimer.
+
+19. Run automated validation before finishing the demo review.
 
 ```bash
 npm run test
@@ -102,6 +111,7 @@ At minimum, verify these important files manually:
 - `05-ai-act-readiness/TRANSPARENCY_NOTICE_DRAFT.md`
 - `05-ai-act-readiness/LEGAL_REVIEW_QUESTIONS.md`
 - `06-client-handoff/CLIENT_HANDOFF_REPORT.md`
+- `06-client-handoff/CLIENT_HANDOFF_REPORT.html`
 - `06-client-handoff/EXECUTIVE_SUMMARY.md`
 - `06-client-handoff/NEXT_STEPS_ROADMAP.md`
 - `07-context/REPO_CONTEXT_PACK.md`
@@ -113,6 +123,8 @@ Use this checklist when reviewing the downloaded Delivery Pack:
 
 - The client handoff report is not empty.
 - The client handoff report is understandable for a client or AI freelancer.
+- The HTML client report opens standalone in a browser and can be saved as PDF from the print dialog.
+- Dashboard print is not presented as the main client report export path.
 - The generated readiness/legal outputs include a `This is not legal advice` disclaimer.
 - The report includes a go/no-go or readiness decision.
 - `04-testing/EVAL_TEST_CASES.md` includes at least 30 eval test cases.
@@ -132,6 +144,7 @@ The demo validation passes when:
 - ZIP scan completes for the selected sample repository.
 - Intake data appears in relevant generated outputs.
 - The preview explains score, go/no-go, risks, included files, and download action clearly.
+- The print-ready report helper explains HTML report plus browser Save as PDF.
 - `Download ShipSeal Delivery Pack` exports a ZIP with all required folders and files.
 - The handoff report is client-ready at MVP quality.
 - `npm run test` and `npm run build` both pass.

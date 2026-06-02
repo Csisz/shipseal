@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import { generateAiActReadinessFiles } from '@/lib/deliveryPack';
 import { normalizeProjectIntake } from '@/lib/intake';
 
@@ -37,7 +37,7 @@ describe('AI Act readiness output v1', () => {
     const files = generateAiActReadinessFiles(highSignalIntake());
 
     expect(files.checklist).toContain('Human oversight warning');
-    expect(files.checklist).toContain('delivery risk');
+    expect(files.checklist).toContain('Human approval status was not provided in the intake');
   });
 
   it('includes legal advice disclaimers in every output', () => {
