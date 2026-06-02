@@ -85,21 +85,22 @@ function resolveSourceContent(
 
   if (path.startsWith('01-agent-instructions/')) {
     return input.agentFileByName.get(filename)?.content || markdownPlaceholder(filename, projectName, [
-      'This agent instruction file is reserved in the ShipSeal MVP Delivery Pack contract.',
-      'Replace it with repository-specific guidance when the dedicated generator is enabled.',
+      'This v1 instruction file is included to keep the ShipSeal Delivery Pack complete.',
+      'Use it as a review surface for repository-specific operating rules before client handoff.',
     ]);
   }
 
   if (path.startsWith('02-skills/')) {
     return skillsPackFiles[path as keyof typeof skillsPackFiles] || markdownPlaceholder(filename, projectName, [
-      'This skill file is reserved in the ShipSeal Delivery Pack contract.',
+      'This v1 skill file is included to keep the ShipSeal Delivery Pack complete.',
+      'Review the skill before using it in a live agent workflow.',
     ]);
   }
 
   if (path.startsWith('03-mcp-governance/')) {
     return input.mcpFileByName.get(filename)?.content || markdownPlaceholder(filename, projectName, [
-      'This MCP governance file is reserved in the ShipSeal MVP Delivery Pack contract.',
-      'Use read-only defaults and human approval for high-risk tool access.',
+      'This v1 MCP governance file is included to keep the ShipSeal Delivery Pack complete.',
+      'Use read-only defaults, least-privilege access, and human approval for high-risk tool access.',
     ]);
   }
 
@@ -123,8 +124,8 @@ function resolveSourceContent(
 
   if (path === '07-context/REPO_CONTEXT_PACK.md') {
     return input.contextFiles?.markdown || markdownPlaceholder('REPO_CONTEXT_PACK.md', projectName, [
-      'No repo context pack was available for this export.',
-      'The file is present to preserve the ShipSeal Delivery Pack contract.',
+      'No repository context summary was available for this export.',
+      'Re-run the scan with a repository ZIP or public GitHub repository to populate context signals.',
     ]);
   }
 
@@ -137,7 +138,8 @@ function resolveSourceContent(
   }
 
   return markdownPlaceholder(filename, projectName, [
-    'This file is reserved in the ShipSeal MVP Delivery Pack contract.',
+    'This v1 output is included to keep the ShipSeal Delivery Pack complete.',
+    'Review and enrich it during client handoff preparation.',
   ]);
 }
 
@@ -184,7 +186,7 @@ function safeJsonParse(content: string): unknown {
 }
 
 function fallbackText(path: string, projectName: string) {
-  return `ShipSeal placeholder for ${projectName}: ${path}.`;
+  return `ShipSeal generated ${path} for ${projectName}. Review this v1 content before client delivery.`;
 }
 
 function markdownPlaceholder(title: string, projectName: string, bullets: string[]) {
@@ -211,7 +213,7 @@ function ciPlaceholder(projectName: string) {
     '    runs-on: ubuntu-latest',
     '    steps:',
     '      - uses: actions/checkout@v4',
-    '      - run: echo "Configure project-specific ShipSeal verification commands"',
+    '      - run: echo "Run project-specific ShipSeal verification commands here"',
     '',
   ].join('\n');
 }

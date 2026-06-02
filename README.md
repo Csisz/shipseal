@@ -31,6 +31,19 @@ npm run dev
 
 Vite defaults to port `8080`. If that port is busy, Vite may choose another port.
 
+## How To Run The ShipSeal MVP Demo
+
+1. Run `npm install` and `npm run dev`.
+2. Open the local Vite URL shown in the terminal.
+3. Upload a small non-sensitive repository ZIP or use the sample report.
+4. Fill the Project Intake fields with realistic client/project details.
+5. Review the ShipSeal score, go/no-go status, risks, and Delivery Pack preview.
+6. Click `Download ShipSeal Delivery Pack`.
+7. Open the ZIP and review `06-client-handoff/CLIENT_HANDOFF_REPORT.md`, `04-testing/EVAL_TEST_CASES.md`, `04-testing/RED_TEAM_PROMPTS.md`, `05-ai-act-readiness/TRANSPARENCY_NOTICE_DRAFT.md`, and `score.json`.
+8. Run `npm run test` and `npm run build` before sharing the demo.
+
+For the full manual checklist, see [ShipSeal Demo Validation](docs/SHIPSEAL_DEMO_VALIDATION.md).
+
 ## Validate Locally
 
 ```bash
@@ -103,6 +116,7 @@ ShipSeal is a React/Vite/shadcn application with local-first scanning.
 - [Deployment](docs/DEPLOYMENT.md)
 - [Release Checklist](docs/RELEASE_CHECKLIST.md)
 - [Demo Script](docs/DEMO_SCRIPT.md)
+- [Demo Validation](docs/SHIPSEAL_DEMO_VALIDATION.md)
 - [Sample Repos](docs/SAMPLE_REPOS.md)
 
 ## Current Limitations
