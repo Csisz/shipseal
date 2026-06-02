@@ -79,8 +79,8 @@ export function ResultDashboard({ report, history, onReset, onClearHistory }: Pr
                   <div className="font-display font-semibold text-lg">{readiness.statusMessage}</div>
                   <div className="text-sm text-muted-foreground mt-1">
                     {ready
-                      ? 'Commit the generated Agent Pack and point your coding agents at AGENTS.md. Optional improvements should not undermine ready status.'
-                      : 'Resolve the items below and re-run the scan to certify your repo.'}
+                      ? 'This project is ready for a controlled AI handoff. Download the ShipSeal Delivery Pack and review it with the client before production use.'
+                      : 'Resolve the risks below before treating this project as ready for client handoff.'}
                   </div>
                 </div>
               </div>
@@ -336,7 +336,7 @@ export function ResultDashboard({ report, history, onReset, onClearHistory }: Pr
         <div className="lg:col-span-2">
           <ProjectIntakeForm value={projectIntake} onChange={setProjectIntake} />
           <DeliveryPackPreview report={report} intake={projectIntake} />
-          <h3 className="font-display text-xl font-semibold mb-3">Core Agent Pack</h3>
+          <h3 className="font-display text-xl font-semibold mb-3">Delivery Pack file preview</h3>
           <AgentPackTabs
             files={report.agentPack}
             repositoryName={report.repoName}

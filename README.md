@@ -2,9 +2,9 @@
 
 ShipSeal is an AI Project Delivery Pack Generator.
 
-The current demo-ready MVP helps teams answer one practical question: can this repository be safely handed to AI coding agents with the right delivery context?
+The current demo-ready MVP helps AI freelancers and agencies answer one practical question: is this project ready for a clear client handoff?
 
-ShipSeal scans a repository ZIP or public GitHub repository, calculates a deterministic Agent Readiness Score, identifies critical blockers, and generates practical handoff artifacts: Agent Pack, MCP Governance Pack, Repo Context Pack, and `score.json`.
+ShipSeal scans a repository ZIP or public GitHub repository, calculates a deterministic ShipSeal score, explains the go/no-go signal, identifies delivery risks, and generates a client-ready Delivery Pack with agent instructions, skills, MCP governance, eval and red-team tests, AI Act readiness notes, client handoff reports, repo context, and `score.json`.
 
 ShipSeal analyzes repository structure and metadata. It does not execute uploaded or imported code.
 
@@ -16,10 +16,10 @@ ShipSeal analyzes repository structure and metadata. It does not execute uploade
 - Sample report for `sample-nextjs-app`.
 - Deterministic readiness rule: score >= 85 and zero critical blockers.
 - AI Readiness Narrative generated locally from scan metadata.
-- Agent Pack export.
-- MCP Governance Pack export.
-- Sanitized Repo Context Pack preview/export.
-- Full ZIP export with core files, `mcp-governance/`, and `context/`.
+- ShipSeal Delivery Pack export.
+- MCP governance outputs.
+- Sanitized repo context preview/export.
+- Full ZIP export with manifest-based Delivery Pack folders.
 - Metadata-only recent scan history.
 
 ## Run Locally
@@ -52,9 +52,12 @@ Click `View sample report` on the landing page. The sample demonstrates:
 - `AI Coding Ready`
 - zero critical blockers
 - Next.js / React / TypeScript stack
-- Agent Pack files
-- MCP Governance Pack
-- Repo Context Pack
+- Agent instructions and skills pack
+- MCP governance
+- Eval and red-team tests
+- AI Act readiness
+- Client handoff report
+- Repo context pack
 
 ### Test ZIP Upload
 
@@ -62,7 +65,7 @@ Click `View sample report` on the landing page. The sample demonstrates:
 2. Open `Upload ZIP`.
 3. Drop or select the ZIP.
 4. Click `Analyze repository`.
-5. Review score, blockers, Scanner safety, Agent Pack, MCP Readiness, and Repo Context Pack.
+5. Review the ShipSeal score, go/no-go status, risks, included Delivery Pack files, AI Act readiness, testing status, and client handoff preview.
 
 ### Test GitHub Public Import
 

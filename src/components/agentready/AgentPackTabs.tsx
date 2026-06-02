@@ -16,7 +16,7 @@ interface Props {
   zipLabel?: string;
 }
 
-export function AgentPackTabs({ files, repositoryName, mcpFiles = [], contextFiles, scoreJson, intake, zipLabel = 'Download Delivery Pack ZIP' }: Props) {
+export function AgentPackTabs({ files, repositoryName, mcpFiles = [], contextFiles, scoreJson, intake, zipLabel = 'Download ShipSeal Delivery Pack' }: Props) {
   const [active, setActive] = useState(0);
   const [copiedName, setCopiedName] = useState<string | null>(null);
   const file = files[active];

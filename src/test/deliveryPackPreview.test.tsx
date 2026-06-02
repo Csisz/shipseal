@@ -16,11 +16,11 @@ describe('DeliveryPackPreview', () => {
 
     render(<DeliveryPackPreview report={report} intake={intake} />);
 
-    expect(screen.getByText('Delivery Pack preview')).toBeInTheDocument();
+    expect(screen.getByText('ShipSeal Delivery Pack preview')).toBeInTheDocument();
     expect(screen.getByText('ShipSeal score')).toBeInTheDocument();
     expect(screen.getByText(`${report.score}/100`)).toBeInTheDocument();
-    expect(screen.getByText('Go/no-go')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /export delivery pack/i })).toBeInTheDocument();
+    expect(screen.getByText('Go/no-go category')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /download shipseal delivery pack/i })).toBeInTheDocument();
     expect(screen.getByText('AI Act readiness')).toBeInTheDocument();
     expect(screen.getByText('Testing pack')).toBeInTheDocument();
     expect(screen.getByText('Client handoff')).toBeInTheDocument();

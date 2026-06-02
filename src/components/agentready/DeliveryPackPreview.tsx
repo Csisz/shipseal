@@ -28,10 +28,10 @@ export function DeliveryPackPreview({ report, intake }: Props) {
         <div className="min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <FileArchive className="h-4 w-4 text-primary-glow" />
-            <h3 className="font-display font-semibold">Delivery Pack preview</h3>
+            <h3 className="font-display font-semibold">ShipSeal Delivery Pack preview</h3>
           </div>
           <p className="text-sm text-muted-foreground max-w-2xl">
-            Preview the client-ready ShipSeal package before exporting the ZIP.
+            Review the score, go/no-go signal, risks, and required outputs before downloading the client-ready ZIP.
           </p>
         </div>
         <Button
@@ -45,13 +45,13 @@ export function DeliveryPackPreview({ report, intake }: Props) {
           )}
           className="bg-gradient-primary border-0 shadow-glow hover:opacity-90"
         >
-          <Download className="h-4 w-4 mr-2" /> Export Delivery Pack
+          <Download className="h-4 w-4 mr-2" /> Download ShipSeal Delivery Pack
         </Button>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         <PreviewMetric label="ShipSeal score" value={`${report.score}/100`} />
-        <PreviewMetric label="Go/no-go" value={goNoGo} />
+        <PreviewMetric label="Go/no-go category" value={goNoGo} />
         <PreviewMetric label="MCP readiness" value={report.mcpReadiness.status || 'Not detected'} />
         <PreviewMetric label="Output files" value={`${requiredPaths.length} required`} />
       </div>
@@ -90,7 +90,7 @@ export function DeliveryPackPreview({ report, intake }: Props) {
           </ul>
         </div>
         <div className="rounded-lg border border-border/60 bg-secondary/25 p-4">
-          <div className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-2">Required output files</div>
+          <div className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-2">Files included in the Delivery Pack</div>
           <div className="grid sm:grid-cols-2 gap-1.5 max-h-56 overflow-auto pr-1">
             {requiredPaths.map(path => (
               <div key={path} className="font-mono text-[11px] text-foreground/85 truncate rounded border border-border/50 bg-background/35 px-2 py-1">

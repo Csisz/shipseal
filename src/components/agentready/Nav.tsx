@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 const links = [
   { label: 'How it works', href: '#how' },
   { label: 'Score', href: '#score' },
-  { label: 'Agent Pack', href: '#pack' },
+  { label: 'What you get', href: '#pack' },
   { label: 'Safety', href: '#safety' },
 ];
 

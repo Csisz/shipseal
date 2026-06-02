@@ -3,7 +3,6 @@ import {
   BookCheck,
   FileArchive,
   FileCheck2,
-  FileCode,
   FileText,
   Gauge,
   GitBranch,
@@ -43,7 +42,7 @@ export function Landing({ onSampleReport, onScrollScan }: Props) {
               Generate the <span className="text-gradient">AI project delivery pack</span> your repo needs.
             </h1>
             <p className="mt-6 text-lg text-muted-foreground max-w-xl">
-              ShipSeal scans a repository ZIP or public GitHub repo, calculates an objective readiness score, identifies critical blockers, and exports the files coding agents need to work safely.
+              ShipSeal scans a repository ZIP or public GitHub repo, explains the handoff readiness score, flags delivery risks, and exports a client-ready Delivery Pack.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button size="lg" onClick={onScrollScan} className="bg-gradient-primary border-0 shadow-glow hover:opacity-90">
@@ -78,7 +77,7 @@ export function Landing({ onSampleReport, onScrollScan }: Props) {
                 <div className="space-y-2.5">
                   <Row icon={<Gauge className="h-3.5 w-3.5 text-success" />} label="Status" value="AI Coding Ready" />
                   <Row icon={<FileCheck2 className="h-3.5 w-3.5 text-accent" />} label="Critical blockers" value="0" />
-                  <Row icon={<FileText className="h-3.5 w-3.5 text-primary-glow" />} label="Agent Pack" value="8 files" />
+                  <Row icon={<FileText className="h-3.5 w-3.5 text-primary-glow" />} label="Delivery Pack" value="26 files" />
                   <Row icon={<Shield className="h-3.5 w-3.5 text-success" />} label="MCP Pack" value="4 files" />
                 </div>
               </div>
@@ -113,7 +112,7 @@ export function Landing({ onSampleReport, onScrollScan }: Props) {
           <div>
             <SectionHeader eyebrow="The score" title="One number you can actually trust." inline />
             <p className="text-muted-foreground mt-4 text-lg">
-              The readiness score is calculated from repository signals, not AI guesswork. A repo is AI Coding Ready only when score is at least 85 and critical blockers are zero.
+              The readiness score is calculated from repository signals, not AI guesswork. It turns a scan into a clear go/no-go handoff signal with visible blockers.
             </p>
             <div className="mt-6 space-y-2">
               {LEVELS.map(level => (
@@ -140,13 +139,13 @@ export function Landing({ onSampleReport, onScrollScan }: Props) {
       </section>
 
       <section id="pack" className="container py-20">
-        <SectionHeader eyebrow="Generated exports" title="Agent Pack, MCP Governance Pack, and Repo Context Pack." />
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-10">
-          {PACK_FILES.map(file => (
-            <div key={file.name} className="glass rounded-2xl p-5 hover:border-primary/40 transition-all group">
-              <file.icon className="h-5 w-5 text-primary-glow mb-2.5 group-hover:scale-110 transition-transform" />
-              <div className="font-mono text-sm font-medium break-words">{file.name}</div>
-              <div className="text-xs text-muted-foreground mt-1">{file.desc}</div>
+        <SectionHeader eyebrow="What you get" title="A client-ready AI project delivery package." />
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-10">
+          {WHAT_YOU_GET.map(item => (
+            <div key={item.title} className="glass rounded-2xl p-5 hover:border-primary/40 transition-all group">
+              <item.icon className="h-5 w-5 text-primary-glow mb-2.5 group-hover:scale-110 transition-transform" />
+              <div className="font-display text-base font-semibold">{item.title}</div>
+              <div className="text-xs text-muted-foreground mt-1">{item.desc}</div>
             </div>
           ))}
         </div>
@@ -218,9 +217,9 @@ const WHAT_IT_DOES = [
   { icon: Upload, title: 'Scan a repo', desc: 'Upload a ZIP or import a public GitHub repository.' },
   { icon: Gauge, title: 'Calculate readiness', desc: 'Score structure, docs, commands, security, and governance.' },
   { icon: FileCheck2, title: 'Identify blockers', desc: 'Show critical blockers that prevent AI Coding Ready status.' },
-  { icon: FileText, title: 'Generate Agent Pack', desc: 'Create AGENTS.md, CLAUDE.md, prompts, testing, security, and CI files.' },
-  { icon: ShieldCheck, title: 'Generate MCP Governance Pack', desc: 'Explain MCP readiness, risks, and safe tool boundaries.' },
-  { icon: FileArchive, title: 'Export Repo Context Pack', desc: 'Export sanitized context metadata without raw file contents.' },
+  { icon: FileText, title: 'Prepare the Delivery Pack', desc: 'Generate agent instructions, skills, tests, governance, and client handoff files.' },
+  { icon: ShieldCheck, title: 'Summarize governance risks', desc: 'Explain MCP, AI Act, privacy, testing, and handoff readiness in one place.' },
+  { icon: FileArchive, title: 'Export a client-ready ZIP', desc: 'Download the full ShipSeal Delivery Pack with structured folders and score.json.' },
 ];
 
 const LEVELS = [
@@ -231,15 +230,13 @@ const LEVELS = [
   { range: '95-100', label: 'ShipSeal Certified', bar: 'bg-gradient-primary', width: '98%' },
 ];
 
-const PACK_FILES = [
-  { name: 'AGENTS.md', desc: 'Primary agent operating manual.', icon: FileText },
-  { name: 'CLAUDE.md', desc: 'Plan-first rules for Claude Code.', icon: BookCheck },
-  { name: 'CODEX_PROMPTS.md', desc: 'Reusable Codex prompts.', icon: FileCode },
-  { name: 'REVIEWER_PROMPT.md', desc: 'AI code reviewer prompt.', icon: Scale },
-  { name: 'SECURITY_REVIEW.md', desc: 'Security checklist by stack.', icon: ShieldCheck },
-  { name: 'TESTING_STRATEGY.md', desc: 'Testing recommendations.', icon: FileCheck2 },
-  { name: 'MCP_READINESS.md', desc: 'Governance readiness snapshot.', icon: ServerCog },
-  { name: 'REPO_CONTEXT_PACK.md', desc: 'Sanitized context metadata.', icon: FileArchive },
+const WHAT_YOU_GET = [
+  { title: 'Agent instructions', desc: 'AGENTS.md, CLAUDE.md, Codex prompts, and reviewer guidance for safe AI-assisted work.', icon: FileText },
+  { title: 'Skills pack', desc: 'Five ready-to-use skills for review, tests, AI Act pre-screening, release checks, and client handoff.', icon: BookCheck },
+  { title: 'MCP governance', desc: 'MCP readiness, security policy, server recommendations, and tool allowlist.', icon: ServerCog },
+  { title: 'Eval and red-team tests', desc: 'Client-readable testing strategy, eval cases, and safe red-team validation prompts.', icon: FileCheck2 },
+  { title: 'AI Act readiness', desc: 'Pre-screen checklist, transparency notice draft, and legal review questions.', icon: Scale },
+  { title: 'Client handoff report', desc: 'Executive summary, go/no-go recommendation, and 30/60/90 day roadmap.', icon: FileArchive },
 ];
 
 const SAFETY = [
