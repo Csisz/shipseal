@@ -11,7 +11,8 @@ export type DeliveryPackSectionId =
 export type DeliveryPackFileKind =
   | 'markdown'
   | 'yaml'
-  | 'json';
+  | 'json'
+  | 'html';
 
 export interface DeliveryPackFileContract {
   path: string;

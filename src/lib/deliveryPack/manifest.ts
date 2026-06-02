@@ -65,6 +65,7 @@ export const SHIPSEAL_DELIVERY_PACK_MANIFEST: DeliveryPackManifest = {
     ]),
     section('client-handoff', '06-client-handoff', 'Client handoff', [
       'CLIENT_HANDOFF_REPORT.md',
+      ['CLIENT_HANDOFF_REPORT.html', 'html'],
       'EXECUTIVE_SUMMARY.md',
       'NEXT_STEPS_ROADMAP.md',
     ]),

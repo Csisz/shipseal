@@ -1,4 +1,4 @@
-import { Download, FileArchive, ShieldCheck, TestTube2, UserCheck } from 'lucide-react';
+import { Download, FileArchive, FileText, ShieldCheck, TestTube2, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { ReadinessReport } from '@/lib/types';
@@ -6,6 +6,7 @@ import type { PartialProjectIntake } from '@/lib/intake';
 import { normalizeProjectIntake } from '@/lib/intake';
 import { buildRepoContextPackJson, buildScoreJson, downloadAgentPackZip } from '@/lib/exports';
 import { getDeliveryPackRequiredPaths } from '@/lib/deliveryPack';
+import { generateClientReportHtml } from '@/lib/report';
 
 interface Props {
   report: ReadinessReport;
@@ -34,19 +35,28 @@ export function DeliveryPackPreview({ report, intake }: Props) {
             Review the score, go/no-go signal, risks, and required outputs before downloading the client-ready ZIP.
           </p>
         </div>
-        <Button
-          onClick={() => downloadAgentPackZip(
-            report.repoName,
-            report.agentPack,
-            report.mcpReadiness.generatedFiles,
-            { markdown: report.contextPack, json: buildRepoContextPackJson(report) },
-            scoreJson,
-            normalizedIntake
-          )}
-          className="bg-gradient-primary border-0 shadow-glow hover:opacity-90"
-        >
-          <Download className="h-4 w-4 mr-2" /> Download ShipSeal Delivery Pack
-        </Button>
+        <div className="flex flex-col sm:flex-row lg:flex-col gap-2">
+          <Button
+            onClick={() => openPrintReadyReport(report.repoName, normalizedIntake, scoreJson)}
+            variant="outline"
+            className="border-border/80"
+          >
+            <FileText className="h-4 w-4 mr-2" /> Open print-ready report
+          </Button>
+          <Button
+            onClick={() => downloadAgentPackZip(
+              report.repoName,
+              report.agentPack,
+              report.mcpReadiness.generatedFiles,
+              { markdown: report.contextPack, json: buildRepoContextPackJson(report) },
+              scoreJson,
+              normalizedIntake
+            )}
+            className="bg-gradient-primary border-0 shadow-glow hover:opacity-90"
+          >
+            <Download className="h-4 w-4 mr-2" /> Download ShipSeal Delivery Pack
+          </Button>
+        </div>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
@@ -102,6 +112,22 @@ export function DeliveryPackPreview({ report, intake }: Props) {
       </div>
     </div>
   );
+}
+
+function openPrintReadyReport(repositoryName: string, intake: ReturnType<typeof normalizeProjectIntake>, scoreJson: unknown) {
+  const html = generateClientReportHtml({ intake, scoreJson });
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const opened = window.open(url, '_blank', 'noopener,noreferrer');
+
+  if (!opened) {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `shipseal-client-report-${repositoryName}.html`;
+    link.click();
+  }
+
+  window.setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 
 function PreviewMetric({ label, value }: { label: string; value: string }) {

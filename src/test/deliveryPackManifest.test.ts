@@ -27,6 +27,7 @@ const REQUIRED_PATHS = [
   '05-ai-act-readiness/TRANSPARENCY_NOTICE_DRAFT.md',
   '05-ai-act-readiness/LEGAL_REVIEW_QUESTIONS.md',
   '06-client-handoff/CLIENT_HANDOFF_REPORT.md',
+  '06-client-handoff/CLIENT_HANDOFF_REPORT.html',
   '06-client-handoff/EXECUTIVE_SUMMARY.md',
   '06-client-handoff/NEXT_STEPS_ROADMAP.md',
   '07-context/REPO_CONTEXT_PACK.md',
@@ -50,6 +51,7 @@ describe('ShipSeal Delivery Pack manifest', () => {
     expect(paths).toContain('04-testing/EVAL_TEST_CASES.md');
     expect(paths).toContain('04-testing/RED_TEAM_PROMPTS.md');
     expect(paths).toContain('06-client-handoff/CLIENT_HANDOFF_REPORT.md');
+    expect(paths).toContain('06-client-handoff/CLIENT_HANDOFF_REPORT.html');
   });
 
   it('contains at least five SKILL.md files', () => {

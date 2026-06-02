@@ -5,6 +5,7 @@ import { generateAiActReadinessFiles } from './aiActReadiness';
 import { generateTestingPackFiles } from './testingPack';
 import { generateSkillsPackFiles } from './skillsPack';
 import { generateClientHandoffFiles } from './clientHandoff';
+import { generateClientReportHtml } from '../report';
 import {
   SHIPSEAL_DELIVERY_PACK_MANIFEST,
   getDeliveryPackFileContracts,
@@ -40,9 +41,7 @@ export function buildDeliveryPackFiles(input: BuildDeliveryPackFilesInput): Deli
     return {
       path: fileContract.path,
       kind: fileContract.kind,
-      content: fileContract.kind === 'json'
-        ? withJsonMetadata(sourceContent, projectName, fileContract.path)
-        : withTextHeader(sourceContent, projectName, fileContract.path, fileContract.kind),
+      content: withGeneratedContent(sourceContent, projectName, fileContract.path, fileContract.kind),
     };
   });
 }
@@ -119,6 +118,7 @@ function resolveSourceContent(
   if (path === '05-ai-act-readiness/TRANSPARENCY_NOTICE_DRAFT.md') return aiActFiles.transparencyNotice;
   if (path === '05-ai-act-readiness/LEGAL_REVIEW_QUESTIONS.md') return aiActFiles.legalReviewQuestions;
   if (path === '06-client-handoff/CLIENT_HANDOFF_REPORT.md') return clientHandoffFiles.clientHandoffReport;
+  if (path === '06-client-handoff/CLIENT_HANDOFF_REPORT.html') return generateClientReportHtml({ intake: input.intake, scoreJson: input.scoreJson });
   if (path === '06-client-handoff/EXECUTIVE_SUMMARY.md') return clientHandoffFiles.executiveSummary;
   if (path === '06-client-handoff/NEXT_STEPS_ROADMAP.md') return clientHandoffFiles.nextStepsRoadmap;
 
@@ -141,6 +141,12 @@ function resolveSourceContent(
     'This v1 output is included to keep the ShipSeal Delivery Pack complete.',
     'Review and enrich it during client handoff preparation.',
   ]);
+}
+
+function withGeneratedContent(content: string | unknown, projectName: string, path: string, kind: DeliveryPackGeneratedFile['kind']) {
+  if (kind === 'json') return withJsonMetadata(content, projectName, path);
+  if (kind === 'html') return typeof content === 'string' ? content.trim() : String(content ?? fallbackText(path, projectName));
+  return withTextHeader(content, projectName, path, kind);
 }
 
 function withTextHeader(content: string | unknown, projectName: string, path: string, kind: 'markdown' | 'yaml') {

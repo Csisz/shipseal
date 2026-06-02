@@ -89,7 +89,7 @@ export function Landing({ onSampleReport, onScrollScan }: Props) {
                   <Row icon={<Gauge className="h-3.5 w-3.5 text-accent" />} label="Go/no-go" value="Conditional Go" />
                   <Row icon={<FileCheck2 className="h-3.5 w-3.5 text-primary-glow" />} label="Eval tests" value="30 cases" />
                   <Row icon={<Shield className="h-3.5 w-3.5 text-warning" />} label="AI Act" value="Review recommended" />
-                  <Row icon={<FileText className="h-3.5 w-3.5 text-success" />} label="Delivery Pack" value="26 files" />
+                  <Row icon={<FileText className="h-3.5 w-3.5 text-success" />} label="Delivery Pack" value="27 files" />
                 </div>
               </div>
               <div className="mt-5 rounded-xl bg-[hsl(240_20%_4%)] border border-border/60 p-3 font-mono text-[11px] text-foreground/85 leading-relaxed overflow-x-auto">

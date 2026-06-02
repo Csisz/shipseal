@@ -31,6 +31,7 @@ describe('ShipSeal sample Delivery Pack', () => {
     expect(paths).toContain('05-ai-act-readiness/AI_ACT_READINESS_CHECKLIST.md');
     expect(paths).toContain('05-ai-act-readiness/TRANSPARENCY_NOTICE_DRAFT.md');
     expect(paths).toContain('06-client-handoff/CLIENT_HANDOFF_REPORT.md');
+    expect(paths).toContain('06-client-handoff/CLIENT_HANDOFF_REPORT.html');
   });
 
   it('includes at least 30 eval cases and 10 red-team prompts', () => {
