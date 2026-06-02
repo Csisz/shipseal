@@ -44,6 +44,14 @@ Vite defaults to port `8080`. If that port is busy, Vite may choose another port
 
 For the full manual checklist, see [ShipSeal Demo Validation](docs/SHIPSEAL_DEMO_VALIDATION.md).
 
+## Sample / Demo Output
+
+ShipSeal includes a dogfooding sample for a realistic `Customer Support RAG Assistant`. The sample simulates an AI support app that answers questions from a knowledge base, is used in the EU, may handle personal data, generates user-facing AI answers, and has human escalation for uncertain or sensitive cases.
+
+Use the sample to review the quality of the generated Delivery Pack without calling an external AI API or backend service. In the UI, run a normal scan or open the sample report, then click `Load demo project` in the Project Intake panel. Download the ShipSeal Delivery Pack and review the client handoff report, AI Act readiness files, eval/red-team tests, skills pack, MCP governance notes, repo context, and `score.json`.
+
+The sample is intentionally not perfect. The generated pack should surface missing red-team documentation, transparency notice review, personal data/privacy review, MCP as a future governance item, and legal review recommendations. See [Sample Delivery Pack Review](docs/SAMPLE_DELIVERY_PACK_REVIEW.md) for the full review checklist.
+
 ## Validate Locally
 
 ```bash
@@ -117,6 +125,7 @@ ShipSeal is a React/Vite/shadcn application with local-first scanning.
 - [Release Checklist](docs/RELEASE_CHECKLIST.md)
 - [Demo Script](docs/DEMO_SCRIPT.md)
 - [Demo Validation](docs/SHIPSEAL_DEMO_VALIDATION.md)
+- [Sample Delivery Pack Review](docs/SAMPLE_DELIVERY_PACK_REVIEW.md)
 - [Sample Repos](docs/SAMPLE_REPOS.md)
 
 ## Current Limitations

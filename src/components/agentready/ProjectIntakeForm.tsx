@@ -1,9 +1,11 @@
 import type React from 'react';
-import { Bot, Building2, Globe2, ShieldCheck, UserCheck } from 'lucide-react';
+import { Bot, Building2, Globe2, ShieldCheck, Sparkles, UserCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import type { ProjectIntake } from '@/lib/intake';
+import { SAMPLE_PROJECT_INTAKE } from '@/lib/demo/sampleProject';
 
 interface Props {
   value: ProjectIntake;
@@ -17,9 +19,18 @@ export function ProjectIntakeForm({ value, onChange }: Props) {
 
   return (
     <div className="glass rounded-2xl p-6 mb-8">
-      <div className="flex items-center gap-2 mb-5">
+      <div className="flex flex-wrap items-center gap-2 mb-5">
         <Bot className="h-4 w-4 text-primary-glow" />
         <h3 className="font-display font-semibold">Project intake</h3>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => onChange({ ...SAMPLE_PROJECT_INTAKE })}
+          className="ml-auto border-border/60"
+        >
+          <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Load demo project
+        </Button>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
