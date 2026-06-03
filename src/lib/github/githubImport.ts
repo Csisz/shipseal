@@ -11,9 +11,13 @@ export type GitHubImportErrorCategory =
   | 'zip-too-large'
   | 'unknown-import-error';
 
+export type GitHubImportStrategy = 'direct-browser-codeload' | 'same-origin-proxy';
+
 export interface GitHubImportInput {
   url: string;
   branch?: string;
+  strategy?: GitHubImportStrategy;
+  proxyEndpoint?: string;
 }
 
 export interface GitHubImportCallbacks {
@@ -46,17 +50,23 @@ function encodeBranch(branch: string) {
   return branch.split('/').map(part => encodeURIComponent(part)).join('/');
 }
 
-export function buildGitHubZipUrl(owner: string, repo: string, branch?: string) {
-  return branch
-    ? `https://codeload.github.com/${owner}/${repo}/zip/refs/heads/${encodeBranch(branch)}`
-    : `https://codeload.github.com/${owner}/${repo}/zip/HEAD`;
+export function buildGitHubCodeloadUrl(owner: string, repo: string, ref = 'HEAD') {
+  return `https://codeload.github.com/${owner}/${repo}/zip/${encodeBranch(ref)}`;
 }
 
-export function buildGitHubProxyImportUrl(owner: string, repo: string, ref?: string, endpoint = '/api/github-archive') {
+export function buildGitHubZipUrl(owner: string, repo: string, branch?: string) {
+  return branch
+    ? buildGitHubCodeloadUrl(owner, repo, `refs/heads/${branch}`)
+    : buildGitHubCodeloadUrl(owner, repo, 'HEAD');
+}
+
+export function buildGitHubArchiveProxyUrl(owner: string, repo: string, ref?: string, endpoint = '/api/github-archive') {
   const params = new URLSearchParams({ owner, repo });
   if (ref?.trim()) params.set('ref', ref.trim());
   return `${endpoint}?${params.toString()}`;
 }
+
+export const buildGitHubProxyImportUrl = buildGitHubArchiveProxyUrl;
 
 interface DirectBrowserCodeloadInput {
   owner: string;
@@ -72,7 +82,15 @@ function classifyParseError(error: unknown): GitHubImportErrorCategory {
 
 export async function directBrowserCodeloadImport(input: DirectBrowserCodeloadInput): Promise<Blob> {
   const zipUrl = buildGitHubZipUrl(input.owner, input.repo, input.branch);
+  return fetchGitHubArchiveBlob(zipUrl, input);
+}
 
+export async function proxyGitHubArchiveImport(input: DirectBrowserCodeloadInput & { endpoint?: string }): Promise<Blob> {
+  const zipUrl = buildGitHubArchiveProxyUrl(input.owner, input.repo, input.branch || 'HEAD', input.endpoint);
+  return fetchGitHubArchiveBlob(zipUrl, input);
+}
+
+async function fetchGitHubArchiveBlob(zipUrl: string, input: DirectBrowserCodeloadInput): Promise<Blob> {
   let response: Response;
   try {
     response = await fetch(zipUrl, { method: 'GET', redirect: 'follow' });
@@ -121,6 +139,14 @@ export async function directBrowserCodeloadImport(input: DirectBrowserCodeloadIn
   return blob;
 }
 
+function resolveGitHubImportStrategy(input: GitHubImportInput): GitHubImportStrategy {
+  if (input.strategy) return input.strategy;
+  if (typeof window === 'undefined') return 'direct-browser-codeload';
+  const host = window.location.hostname.toLowerCase();
+  const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::1' || host.endsWith('.local');
+  return isLocal ? 'direct-browser-codeload' : 'same-origin-proxy';
+}
+
 function step(callbacks: GitHubImportCallbacks, index: number, progress: number, complete = false) {
   const label = index === 0 ? 'Validating GitHub URL' : 'Downloading public repository ZIP';
   if (complete) {
@@ -146,7 +172,10 @@ export async function importPublicGitHubRepo(input: GitHubImportInput, callbacks
   step(callbacks, 0, 12, true);
 
   step(callbacks, 1, 18);
-  const blob = await directBrowserCodeloadImport({ owner: parsed.owner, repo: parsed.repo, branch });
+  const strategy = resolveGitHubImportStrategy(input);
+  const blob = strategy === 'same-origin-proxy'
+    ? await proxyGitHubArchiveImport({ owner: parsed.owner, repo: parsed.repo, branch, endpoint: input.proxyEndpoint })
+    : await directBrowserCodeloadImport({ owner: parsed.owner, repo: parsed.repo, branch });
 
   step(callbacks, 1, 28, true);
 

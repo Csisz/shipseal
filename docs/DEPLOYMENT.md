@@ -37,7 +37,7 @@ AgentReady can be deployed as a static React/Vite application on Vercel or Netli
 
 Public GitHub import attempts browser ZIP downloads from GitHub. Browser import may fail because of CORS, network policy, repository availability, branch naming, or ZIP size limits. The supported local fallback is to download the repository as ZIP and upload it manually.
 
-A hosted demo should eventually use a same-origin serverless proxy such as `/api/github-archive?owner=Csisz&repo=shipseal&ref=main`. The current MVP does not include that backend endpoint; see [GitHub Import Proxy Plan](GITHUB_IMPORT_PROXY_PLAN.md).
+A Vercel hosted demo can use the same-origin serverless proxy at `/api/github-archive?owner=Csisz&repo=shipseal&ref=main`. Static-only hosts without an equivalent function should keep ZIP upload as the main demo path; see [GitHub Import Proxy Plan](GITHUB_IMPORT_PROXY_PLAN.md).
 
 Private repositories require a future backend/GitHub App integration. Do not add user-pasted tokens or private credentials to the browser.
 

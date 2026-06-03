@@ -26,7 +26,7 @@ Do not add OpenAI, Anthropic, GitHub, Stripe, or private API keys to the client-
    - Build command: `npm run build`
    - Output directory: `dist`
 3. Leave environment variables empty unless a future sprint explicitly adds safe public config.
-4. Deploy.
+4. Deploy. Vercel should also expose the serverless endpoint at `/api/github-archive`.
 5. After deployment, run the manual demo checks below.
 
 ## Netlify Demo Deployment
@@ -44,7 +44,8 @@ Do not add OpenAI, Anthropic, GitHub, Stripe, or private API keys to the client-
 - Landing/pricing validation page.
 - Sample project flow.
 - ZIP upload scanning in the browser.
-- Public GitHub URL import when browser/network rules allow fetching the public ZIP.
+- Public GitHub URL import through the Vercel same-origin archive proxy in hosted demos.
+- Direct public GitHub URL import when browser/network rules allow fetching the public ZIP.
 - Project Intake form.
 - ShipSeal score and preview UI.
 - Delivery Pack ZIP export.
@@ -85,7 +86,8 @@ Do not add OpenAI, Anthropic, GitHub, Stripe, or private API keys to the client-
 - Optional branch input is supported when the branch name is known.
 - If no branch is provided, ShipSeal requests the public GitHub archive for `HEAD`; GitHub resolves the repository default branch.
 - Public GitHub import is best-effort in the browser. ZIP upload is the recommended fallback for local demos.
-- A hosted public GitHub import should use a same-origin serverless proxy such as `/api/github-archive?owner=Csisz&repo=shipseal&ref=main`. See [GitHub Import Proxy Plan](GITHUB_IMPORT_PROXY_PLAN.md).
+- A hosted Vercel public GitHub import can use the same-origin serverless proxy `/api/github-archive?owner=Csisz&repo=shipseal&ref=main`. See [GitHub Import Proxy Plan](GITHUB_IMPORT_PROXY_PLAN.md).
+- Static hosts without an equivalent function should use ZIP upload for demos.
 
 ## Final Hosted Demo Checklist
 
@@ -94,6 +96,7 @@ Do not add OpenAI, Anthropic, GitHub, Stripe, or private API keys to the client-
 - Hosted landing page loads.
 - Sample project opens.
 - ZIP upload scan works.
-- Public GitHub URL import succeeds or fails with a clear ZIP fallback message.
+- On Vercel, `/api/github-archive?owner=Csisz&repo=shipseal&ref=main` returns a ZIP response for a public repo.
+- Public GitHub URL import succeeds through the proxy or fails with a clear ZIP fallback message.
 - Delivery Pack ZIP downloads.
 - `CLIENT_HANDOFF_REPORT.html` opens and can be saved as PDF from the browser.

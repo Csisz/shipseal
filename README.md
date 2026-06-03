@@ -11,7 +11,7 @@ ShipSeal analyzes repository structure and metadata. It does not execute uploade
 ## What Works Now
 
 - ZIP upload scanning in the browser.
-- Public GitHub repo import when browser ZIP fetch is available.
+- Public GitHub repo import when browser ZIP fetch is available, with a Vercel same-origin proxy option for hosted demos.
 - Graceful manual ZIP fallback when GitHub import fails.
 - Sample report for `sample-nextjs-app`.
 - Deterministic readiness rule: score >= 85 and zero critical blockers.
@@ -51,7 +51,7 @@ ShipSeal supports best-effort public GitHub repository import in the browser. Su
 
 Local mode: ZIP upload is recommended. Direct GitHub ZIP import can be blocked by browser CORS or network restrictions because the app is trying to fetch GitHub's archive from the browser. If import is blocked, download the repository as ZIP from GitHub and upload it manually.
 
-Hosted mode should use a same-origin proxy endpoint such as `/api/github-archive?owner=Csisz&repo=shipseal&ref=main`. See [GitHub Import Proxy Plan](docs/GITHUB_IMPORT_PROXY_PLAN.md) for the planned serverless shape.
+Hosted Vercel mode can use the same-origin proxy endpoint `/api/github-archive?owner=Csisz&repo=shipseal&ref=main`. See [GitHub Import Proxy Plan](docs/GITHUB_IMPORT_PROXY_PLAN.md) for the serverless shape and security notes.
 
 Only public GitHub repositories are supported in the local MVP. Private repositories, tokens, OAuth, and GitHub App installation are not supported yet.
 
@@ -73,7 +73,9 @@ npm run build
 npm run dev
 ```
 
-For Vercel or Netlify, use `npm run build` and publish the `dist` directory. No environment variables are required for the current MVP. See [Hosted Demo Readiness](docs/HOSTED_DEMO_READINESS.md) for the full deployment and validation checklist.
+For Vercel, use `npm run build` and publish the `dist` directory; the minimal `api/github-archive.ts` serverless endpoint is included for public GitHub archive imports in hosted demos. No environment variables are required.
+
+For Netlify/static-only hosting, the app still works with ZIP upload and sample project flow, but the Vercel API endpoint is not available unless an equivalent same-origin function is implemented. See [Hosted Demo Readiness](docs/HOSTED_DEMO_READINESS.md) for the full deployment and validation checklist.
 
 ## Sample / Demo Output
 

@@ -13,11 +13,11 @@ This is not a scanner failure. When direct import is blocked, the supported fall
 
 ZIP upload uses a local file selected by the user. ShipSeal scans repository structure and metadata in the browser and does not execute uploaded code. No GitHub fetch is required, so CORS does not apply.
 
-## Future Serverless Proxy
+## Vercel Serverless Proxy MVP
 
-Hosted demos should use a same-origin endpoint that fetches the public GitHub archive server-side and returns the ZIP to the browser.
+Hosted Vercel demos can use the same-origin endpoint in `api/github-archive.ts`. It fetches the public GitHub archive server-side and returns the ZIP to the browser with `application/zip`.
 
-Planned endpoint shape:
+Endpoint shape:
 
 ```text
 /api/github-archive?owner=Csisz&repo=shipseal&ref=main
@@ -27,7 +27,7 @@ Expected behavior:
 
 - Validate `owner`, `repo`, and optional `ref`.
 - Fetch only from GitHub public archive endpoints.
-- Stream the ZIP response back to the browser.
+- Return the ZIP response back to the browser.
 - Return clear errors for repo not found, ref not found, size limit, rate limit, and unknown failures.
 - Do not store ZIP archives persistently.
 
@@ -39,7 +39,7 @@ Expected behavior:
 - Do not support private repositories.
 - Enforce a maximum ZIP size before scanning.
 - Keep scanner-side max file count and safety limits.
-- Add rate limiting for hosted demos.
+- Add stronger rate limiting before production use.
 - Do not log sensitive URL query data beyond minimal operational metadata.
 - Do not persist downloaded archives.
 
@@ -48,7 +48,9 @@ Expected behavior:
 The code is prepared with:
 
 - Direct browser codeload import for best-effort local demos.
+- Same-origin proxy import for hosted Vercel demos.
 - Error categories for invalid URL, unsupported host, network/CORS blocked, repo not found, branch/ref not found, and unknown import errors.
 - A proxy URL builder for `/api/github-archive?owner=&repo=&ref=`.
+- A minimal Vercel-compatible endpoint at `api/github-archive.ts`.
 
-The backend proxy endpoint is intentionally not implemented in this sprint.
+This is still an MVP endpoint. It is public-repo-only, tokenless, and not a GitHub App.

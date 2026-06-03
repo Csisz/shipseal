@@ -114,6 +114,7 @@ export function UploadDropzone({ onFile, onGitHubImport, disabled }: Props) {
             <div>Examples: <span className="font-mono text-foreground/80">https://github.com/Csisz/shipseal</span>, <span className="font-mono text-foreground/80">github.com/Csisz/shipseal</span>, or a <span className="font-mono text-foreground/80">.git</span> URL.</div>
             <div>Only public GitHub repositories are supported in the local MVP. Private repositories are not supported.</div>
             <div>Public GitHub import may be blocked by browser CORS restrictions in local mode. ZIP upload is the most reliable local MVP path.</div>
+            <div>Hosted demos can use the ShipSeal GitHub archive proxy. In local browser mode, ZIP upload remains the most reliable option.</div>
             <div>Local MVP note: if GitHub import is blocked, use Download ZIP on GitHub and upload it here.</div>
             {!githubUrl.trim() && <div className="text-accent">Enter a GitHub URL to enable import.</div>}
           </div>

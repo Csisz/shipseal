@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseGitHubUrl } from '@/lib/github/parseGitHubUrl';
 import {
+  buildGitHubArchiveProxyUrl,
+  buildGitHubCodeloadUrl,
   buildGitHubProxyImportUrl,
   buildGitHubZipUrl,
   GitHubImportError,
@@ -44,11 +46,13 @@ describe('public GitHub import helpers', () => {
   });
 
   it('builds a codeload ZIP URL for default and explicit branches', () => {
+    expect(buildGitHubCodeloadUrl('Csisz', 'shipseal', 'main')).toBe('https://codeload.github.com/Csisz/shipseal/zip/main');
     expect(buildGitHubZipUrl('Csisz', 'shipseal')).toBe('https://codeload.github.com/Csisz/shipseal/zip/HEAD');
     expect(buildGitHubZipUrl('Csisz', 'shipseal', 'main')).toBe('https://codeload.github.com/Csisz/shipseal/zip/refs/heads/main');
   });
 
   it('builds a future same-origin proxy import URL', () => {
+    expect(buildGitHubArchiveProxyUrl('Csisz', 'shipseal', 'main')).toBe('/api/github-archive?owner=Csisz&repo=shipseal&ref=main');
     expect(buildGitHubProxyImportUrl('Csisz', 'shipseal', 'main')).toBe('/api/github-archive?owner=Csisz&repo=shipseal&ref=main');
     expect(buildGitHubProxyImportUrl('Csisz', 'shipseal')).toBe('/api/github-archive?owner=Csisz&repo=shipseal');
   });
@@ -68,6 +72,22 @@ describe('public GitHub import helpers', () => {
       githubBranch: 'main',
       sourceUrl: 'https://github.com/Csisz/shipseal/tree/main',
     } satisfies ScanSourceMetadata);
+  });
+
+  it('can import through the same-origin proxy strategy', async () => {
+    const file = await demoZipFile();
+    const headers = new Headers({ 'content-length': String(file.size) });
+    const fetchMock = vi.fn(async () => new Response(file, { status: 200, headers }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const imported = await importPublicGitHubRepo({
+      url: 'github.com/Csisz/shipseal',
+      branch: 'main',
+      strategy: 'same-origin-proxy',
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/github-archive?owner=Csisz&repo=shipseal&ref=main', { method: 'GET', redirect: 'follow' });
+    expect(imported.source.sourceType).toBe('github-url');
   });
 
   it('returns a clear fallback message when public import fails', async () => {

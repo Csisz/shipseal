@@ -27,6 +27,16 @@ github.com/Csisz/shipseal
 6. Click `Import public repo`.
 7. Wait for the import and scan flow to complete.
 
+## Vercel Proxy Smoke Test
+
+For a Vercel hosted demo, open:
+
+```text
+/api/github-archive?owner=Csisz&repo=shipseal&ref=main
+```
+
+Expected result: the endpoint returns an `application/zip` response for the public repository archive. If this endpoint is unavailable, use ZIP upload for the demo.
+
 ## Expected Result
 
 - The scan runs or fails with a clear fallback message.

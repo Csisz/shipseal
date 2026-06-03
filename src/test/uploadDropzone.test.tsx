@@ -10,6 +10,7 @@ describe('UploadDropzone GitHub import copy', () => {
 
     expect(screen.getByText(/Paste a public GitHub repository URL or upload a ZIP/i)).toBeInTheDocument();
     expect(screen.getByText(/Public GitHub import may be blocked by browser CORS restrictions in local mode/i)).toBeInTheDocument();
+    expect(screen.getByText(/Hosted demos can use the ShipSeal GitHub archive proxy/i)).toBeInTheDocument();
     expect(screen.getByText(/Local MVP note: if GitHub import is blocked, use Download ZIP on GitHub and upload it here/i)).toBeInTheDocument();
   });
 });
