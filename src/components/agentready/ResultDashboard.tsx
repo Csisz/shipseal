@@ -72,8 +72,11 @@ export function ResultDashboard({ report, history, onReset, onClearHistory }: Pr
               <SummaryTile label="Score" value={`${report.score}/100`} />
               <SummaryTile label="Status" value={displayReadinessLevel(readiness.level)} />
               <SummaryTile label="Blockers" value={String(report.blockers.length)} />
-              <SummaryTile label="Delivery Pack" value="Full Delivery Pack: 27 required outputs" />
+              <SummaryTile label="Delivery Pack" value="Full pack · 27 outputs" />
             </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Agent instructions, skills, MCP governance, tests, AI Act readiness and client handoff report.
+            </p>
 
             <div className={`mt-6 rounded-2xl p-5 border ${ready ? 'bg-success/10 border-success/30' : report.blockers.length ? 'bg-destructive/10 border-destructive/30' : 'bg-warning/10 border-warning/30'}`}>
               <div className="flex items-start gap-3">

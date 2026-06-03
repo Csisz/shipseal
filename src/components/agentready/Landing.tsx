@@ -23,7 +23,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { appVersion } from '@/lib/version';
+import { SHIPSEAL_VERSION } from '@/lib/version';
 import { ScoreGauge } from './ScoreGauge';
 import { ReadinessBadge } from './ReadinessBadge';
 
@@ -263,7 +263,7 @@ export function Landing({ onSampleReport, onScrollScan }: Props) {
             <div className="h-5 w-5 rounded bg-gradient-primary flex items-center justify-center"><Sparkles className="h-3 w-3 text-primary-foreground" /></div>
             <span>ShipSeal - AI Project Delivery Pack Generator.</span>
           </div>
-          <div>ShipSeal MVP v{appVersion}</div>
+          <div>ShipSeal MVP v{SHIPSEAL_VERSION}</div>
         </div>
       </footer>
     </>

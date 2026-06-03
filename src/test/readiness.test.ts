@@ -26,7 +26,7 @@ import { LocalAIProvider } from '@/lib/ai';
 import { buildGitHubZipUrl, GitHubImportError, importPublicGitHubRepo } from '@/lib/github/githubImport';
 import { parseGitHubUrl } from '@/lib/github/githubUrl';
 import { criticalBlockersEmptyStateText } from '@/lib/uiCopy';
-import { appVersion } from '@/lib/version';
+import { SHIPSEAL_VERSION } from '@/lib/version';
 
 function scanInput(files: string[], textContents: Record<string, string> = {}): RepoScanInput {
   return {
@@ -135,7 +135,7 @@ describe('readiness logic', () => {
 
 describe('Sprint 8 demo readiness polish', () => {
   it('version marker exists for RC1', () => {
-    expect(appVersion).toBe('0.1.0-rc1');
+    expect(SHIPSEAL_VERSION).toBe('0.1.0-rc1');
   });
 
   it('.env.example does not contain real API keys', () => {

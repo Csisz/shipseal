@@ -25,9 +25,10 @@ Do not add OpenAI, Anthropic, GitHub, Stripe, or private API keys to the client-
 2. Use the default Vite settings:
    - Build command: `npm run build`
    - Output directory: `dist`
-3. Leave environment variables empty unless a future sprint explicitly adds safe public config.
-4. Deploy. Vercel should also expose the serverless endpoint at `/api/github-archive`.
-5. After deployment, run the manual demo checks below.
+3. Keep `vercel.json`; it lets Vercel serve API/functions and static assets before the SPA fallback.
+4. Leave environment variables empty unless a future sprint explicitly adds safe public config.
+5. Deploy. Vercel should also expose the serverless endpoint at `/api/github-archive`.
+6. After deployment, run the manual demo checks below and [Hosted Smoke Test](HOSTED_SMOKE_TEST.md).
 
 ## Netlify Demo Deployment
 
@@ -94,6 +95,7 @@ Do not add OpenAI, Anthropic, GitHub, Stripe, or private API keys to the client-
 - `npm run test` passes locally.
 - `npm run build` passes locally.
 - Hosted landing page loads.
+- Footer shows `ShipSeal MVP v0.1.0-rc1`.
 - Sample project opens.
 - ZIP upload scan works.
 - On Vercel, `/api/github-archive?owner=Csisz&repo=shipseal&ref=main` returns a ZIP response for a public repo.

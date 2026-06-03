@@ -77,6 +77,21 @@ For Vercel, use `npm run build` and publish the `dist` directory; the minimal `a
 
 For Netlify/static-only hosting, the app still works with ZIP upload and sample project flow, but the Vercel API endpoint is not available unless an equivalent same-origin function is implemented. See [Hosted Demo Readiness](docs/HOSTED_DEMO_READINESS.md) for the full deployment and validation checklist.
 
+## Deploy To Vercel
+
+```bash
+npm install
+npm run test
+npm run build
+vercel dev
+vercel deploy
+vercel --prod
+```
+
+Use `vercel dev` to verify the frontend and `/api/github-archive` endpoint together before publishing. In local Vite mode, public GitHub import can still hit browser CORS restrictions; in Vercel hosted mode, ShipSeal uses `/api/github-archive` first for public GitHub ZIP import.
+
+Private GitHub repositories are not supported yet. ZIP upload remains the stable fallback for demos and client validation. After deployment, run the [Hosted Smoke Test](docs/HOSTED_SMOKE_TEST.md).
+
 ## Sample / Demo Output
 
 ShipSeal includes a dogfooding sample for a realistic `Customer Support RAG Assistant`. The sample simulates an AI support app that answers questions from a knowledge base, is used in the EU, may handle personal data, generates user-facing AI answers, and has human escalation for uncertain or sensitive cases.
