@@ -9,6 +9,7 @@ import { CategoryBreakdown } from './CategoryBreakdown';
 import { AgentPackTabs } from './AgentPackTabs';
 import { ProjectIntakeForm } from './ProjectIntakeForm';
 import { DeliveryPackPreview } from './DeliveryPackPreview';
+import { SuggestedReadinessFixPack } from './SuggestedReadinessFixPack';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { buildRepoContextPackJson, buildScoreJson, downloadJsonFile, downloadTextFile } from '@/lib/exports';
@@ -151,6 +152,8 @@ export function ResultDashboard({ report, history, onReset, onClearHistory, init
       </div>
 
       <DeliveryPackPreview report={report} intake={appliedIntake} intakeSkipped={wasIntakeSkipped} />
+
+      <SuggestedReadinessFixPack report={report} />
 
       <Disclosure title="Detailed scan results, governance and generated file previews">
       <div className="glass rounded-2xl p-6 mb-8">

@@ -16,6 +16,7 @@ describe('ShipSeal navigation', () => {
     expect(screen.getByRole('link', { name: /Pricing/i })).toHaveAttribute('href', '#pricing');
     expect(screen.getByRole('link', { name: /Disclaimer/i })).toHaveAttribute('href', '#disclaimer');
     expect(screen.getByRole('link', { name: /Scan your repo/i })).toHaveAttribute('href', '#scan');
+    expect(screen.getByRole('link', { name: /ShipSeal home/i })).toHaveAttribute('href', '/');
   });
 
   it('calls anchor navigation callback when provided', () => {
@@ -29,5 +30,18 @@ describe('ShipSeal navigation', () => {
     fireEvent.click(screen.getByRole('link', { name: /Pricing/i }));
 
     expect(onNavigateAnchor).toHaveBeenCalledWith('#pricing');
+  });
+
+  it('calls home navigation callback when the logo is clicked', () => {
+    const onHome = vi.fn();
+    render(
+      <MemoryRouter>
+        <Nav onHome={onHome} />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole('link', { name: /ShipSeal home/i }));
+
+    expect(onHome).toHaveBeenCalledTimes(1);
   });
 });

@@ -13,9 +13,10 @@ const links = [
 
 interface Props {
   onNavigateAnchor?: (href: string) => void;
+  onHome?: () => void;
 }
 
-export function Nav({ onNavigateAnchor }: Props) {
+export function Nav({ onNavigateAnchor, onHome }: Props) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -33,7 +34,12 @@ export function Nav({ onNavigateAnchor }: Props) {
     )}>
       <div className="container flex h-20 items-center justify-between">
 
-        <Link to="/" className="flex items-center gap-2 group" aria-label="ShipSeal">
+        <Link
+          to="/"
+          onClick={(event) => { if (onHome) { event.preventDefault(); onHome(); } }}
+          className="flex items-center gap-2 group"
+          aria-label="ShipSeal home"
+        >
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
             <Braces className="h-5 w-5 text-primary-foreground" />
           </span>

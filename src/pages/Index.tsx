@@ -97,6 +97,17 @@ const Index = () => {
     }, 0);
   }, [scan]);
 
+  const handleHome = useCallback(() => {
+    scan.resetScan();
+    setSampleReport(null);
+    setPendingSource(null);
+    setSubmittedIntake(undefined);
+    setSubmittedIntakeSkipped(false);
+    savedReportKey.current = null;
+    lastError.current = null;
+    window.setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
+  }, [scan]);
+
   const handleFile = useCallback((file: File) => {
     setSampleReport(null);
     savedReportKey.current = null;
@@ -165,7 +176,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Nav onNavigateAnchor={handleNavAnchor} />
+      <Nav onNavigateAnchor={handleNavAnchor} onHome={handleHome} />
 
       {activeReport ? (
         <main className="pt-20">
