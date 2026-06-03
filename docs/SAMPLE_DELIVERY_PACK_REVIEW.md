@@ -93,7 +93,7 @@ The sample output is demo-capable when:
 3. In Project Intake, click `Load demo project`.
 4. Confirm the intake fields populate with `Customer Support RAG Assistant`.
 5. Review the Delivery Pack preview.
-6. Click `Open HTML report and save as PDF` and confirm the standalone report opens.
+6. Click `Download PDF report` and confirm the PDF downloads; then click `Open HTML report` and confirm the standalone fallback opens.
 7. Use browser Print / Save as PDF if a PDF is needed.
 8. Click `Download ShipSeal Delivery Pack`.
 9. Review the files listed above.

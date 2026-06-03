@@ -48,9 +48,9 @@ Expected result:
 ## D. Client Report Smoke Test
 
 1. After a scan, fill the Project Intake fields with realistic demo details.
-2. Click `Open HTML report and save as PDF`.
-3. Confirm the standalone print-ready HTML report opens in a new tab or downloads as an HTML file.
-4. Use browser `Ctrl+P` / `Save as PDF`.
+2. Click `Download PDF report`.
+3. Confirm `shipseal-client-report-[project].pdf` downloads.
+4. Click `Open HTML report` and confirm browser `Ctrl+P` / `Save as PDF` remains available as fallback.
 5. Confirm this is the client report export path, not dashboard printing.
 
 ## E. Failure Smoke Test

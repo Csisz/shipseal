@@ -6,14 +6,16 @@ import type { PartialProjectIntake } from '@/lib/intake';
 import { normalizeProjectIntake } from '@/lib/intake';
 import { buildRepoContextPackJson, buildScoreJson, downloadAgentPackZip } from '@/lib/exports';
 import { getDeliveryPackRequiredPaths } from '@/lib/deliveryPack';
-import { generateClientReportHtml } from '@/lib/report';
+import { downloadClientReportPdf, generateClientReportHtml } from '@/lib/report';
+import { toast } from '@/hooks/use-toast';
 
 interface Props {
   report: ReadinessReport;
   intake?: PartialProjectIntake;
+  intakeSkipped?: boolean;
 }
 
-export function DeliveryPackPreview({ report, intake }: Props) {
+export function DeliveryPackPreview({ report, intake, intakeSkipped = false }: Props) {
   const normalizedIntake = normalizeProjectIntake(intake, report.repoName);
   const requiredPaths = getDeliveryPackRequiredPaths();
   const scoreJson = buildScoreJson(report);
@@ -37,14 +39,20 @@ export function DeliveryPackPreview({ report, intake }: Props) {
         </div>
         <div className="flex flex-col sm:flex-row lg:flex-col gap-2">
           <Button
+            onClick={() => downloadPdfReport(report.repoName, normalizedIntake, scoreJson)}
+            className="bg-gradient-primary border-0 shadow-glow hover:opacity-90"
+          >
+            <Download className="h-4 w-4 mr-2" /> Download PDF report
+          </Button>
+          <Button
             onClick={() => openPrintReadyReport(report.repoName, normalizedIntake, scoreJson)}
             variant="outline"
             className="border-border/80"
           >
-            <FileText className="h-4 w-4 mr-2" /> Open HTML report and save as PDF
+            <FileText className="h-4 w-4 mr-2" /> Open HTML report
           </Button>
           <p className="max-w-xs text-xs text-muted-foreground leading-relaxed">
-            This opens a standalone HTML client report. Open it in your browser and use Print / Save as PDF to create a PDF.
+            PDF uses the standalone client report. If PDF generation fails, open the HTML report and use Print / Save as PDF.
           </p>
           <Button
             onClick={() => downloadAgentPackZip(
@@ -69,7 +77,13 @@ export function DeliveryPackPreview({ report, intake }: Props) {
         <PreviewMetric label="Output files" value={`${requiredPaths.length} required`} />
       </div>
 
-      {intakeCompletenessWarning(normalizedIntake) && (
+      {intakeSkipped && (
+        <div className="mb-5 rounded-lg border border-warning/35 bg-warning/10 px-4 py-3 text-sm text-warning">
+          Client report quality is limited because project intake was skipped.
+        </div>
+      )}
+
+      {!intakeSkipped && intakeCompletenessWarning(normalizedIntake) && (
         <div className="mb-5 rounded-lg border border-warning/35 bg-warning/10 px-4 py-3 text-sm text-warning">
           Client report quality improves when project intake fields are completed.
         </div>
@@ -137,6 +151,18 @@ function openPrintReadyReport(repositoryName: string, intake: ReturnType<typeof 
   }
 
   window.setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+
+async function downloadPdfReport(repositoryName: string, intake: ReturnType<typeof normalizeProjectIntake>, scoreJson: unknown) {
+  try {
+    await downloadClientReportPdf({ intake, scoreJson }, repositoryName);
+  } catch {
+    toast({
+      title: 'PDF generation failed',
+      description: 'PDF generation failed. Open the HTML report and use Print / Save as PDF.',
+      variant: 'destructive',
+    });
+  }
 }
 
 function PreviewMetric({ label, value }: { label: string; value: string }) {

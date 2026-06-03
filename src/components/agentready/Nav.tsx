@@ -11,7 +11,11 @@ const links = [
   { label: 'Disclaimer', href: '#disclaimer' },
 ];
 
-export function Nav() {
+interface Props {
+  onNavigateAnchor?: (href: string) => void;
+}
+
+export function Nav({ onNavigateAnchor }: Props) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -37,14 +41,14 @@ export function Nav() {
         </Link>
         <nav className="hidden md:flex items-center gap-7">
           {links.map((l) => (
-            <a key={l.href} href={l.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <a key={l.href} href={l.href} onClick={(event) => { if (onNavigateAnchor) { event.preventDefault(); onNavigateAnchor(l.href); } }} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               {l.label}
             </a>
           ))}
         </nav>
         <div className="hidden md:flex items-center gap-2">
           <Button asChild variant="default" className="bg-gradient-primary hover:opacity-90 border-0 shadow-glow">
-            <a href="#scan">Scan your repo</a>
+            <a href="#scan" onClick={(event) => { if (onNavigateAnchor) { event.preventDefault(); onNavigateAnchor('#scan'); } }}>Scan your repo</a>
           </Button>
         </div>
         <button onClick={() => setOpen(!open)} className="md:hidden p-2">
@@ -55,11 +59,11 @@ export function Nav() {
         <div className="md:hidden border-t border-border/60 bg-background/95 backdrop-blur-xl">
           <div className="container py-4 flex flex-col gap-3">
             {links.map((l) => (
-              <a key={l.href} href={l.href} onClick={() => setOpen(false)} className="text-sm text-muted-foreground hover:text-foreground py-1.5">
+              <a key={l.href} href={l.href} onClick={(event) => { setOpen(false); if (onNavigateAnchor) { event.preventDefault(); onNavigateAnchor(l.href); } }} className="text-sm text-muted-foreground hover:text-foreground py-1.5">
                 {l.label}
               </a>
             ))}
-            <Button asChild className="bg-gradient-primary border-0 mt-2"><a href="#scan" onClick={() => setOpen(false)}>Scan your repo</a></Button>
+            <Button asChild className="bg-gradient-primary border-0 mt-2"><a href="#scan" onClick={(event) => { setOpen(false); if (onNavigateAnchor) { event.preventDefault(); onNavigateAnchor('#scan'); } }}>Scan your repo</a></Button>
           </div>
         </div>
       )}

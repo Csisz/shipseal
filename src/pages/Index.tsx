@@ -3,11 +3,20 @@ import { Nav } from '@/components/agentready/Nav';
 import { Landing } from '@/components/agentready/Landing';
 import { UploadDropzone } from '@/components/agentready/UploadDropzone';
 import { ScanProgress } from '@/components/agentready/ScanProgress';
+import { ProjectIntakeForm } from '@/components/agentready/ProjectIntakeForm';
 import { buildSampleReport } from '@/lib/readiness';
 import { clearScanHistory, getScanHistory, saveScanHistory } from '@/lib/scanHistory';
 import type { ReadinessReport, ScanHistoryItem } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useRepoScan } from '@/hooks/useRepoScan';
+import type { ProjectIntake } from '@/lib/intake';
+import { createDefaultProjectIntake } from '@/lib/intake';
+import { parseGitHubUrl } from '@/lib/github/parseGitHubUrl';
+import { Button } from '@/components/ui/button';
+
+type PendingSource =
+  | { type: 'zip'; file: File; projectName: string }
+  | { type: 'github'; url: string; branch?: string; projectName: string };
 
 const ResultDashboard = lazy(() => import('@/components/agentready/ResultDashboard').then(module => ({ default: module.ResultDashboard })));
 
@@ -34,6 +43,10 @@ const Index = () => {
   const scan = useRepoScan();
   const [sampleReport, setSampleReport] = useState<ReadinessReport | null>(null);
   const [history, setHistory] = useState<ScanHistoryItem[]>([]);
+  const [pendingSource, setPendingSource] = useState<PendingSource | null>(null);
+  const [pendingIntake, setPendingIntake] = useState<ProjectIntake>(() => createDefaultProjectIntake());
+  const [submittedIntake, setSubmittedIntake] = useState<ProjectIntake | undefined>();
+  const [submittedIntakeSkipped, setSubmittedIntakeSkipped] = useState(false);
   const savedReportKey = useRef<string | null>(null);
   const lastError = useRef<string | null>(null);
   const scanSectionRef = useRef<HTMLDivElement>(null);
@@ -68,22 +81,66 @@ const Index = () => {
     scanSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
+  const handleNavAnchor = useCallback((href: string) => {
+    scan.resetScan();
+    setSampleReport(null);
+    setPendingSource(null);
+    setSubmittedIntake(undefined);
+    setSubmittedIntakeSkipped(false);
+    savedReportKey.current = null;
+    lastError.current = null;
+    window.setTimeout(() => {
+      const target = document.querySelector(href);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 0);
+  }, [scan]);
+
   const handleFile = useCallback((file: File) => {
     setSampleReport(null);
     savedReportKey.current = null;
     lastError.current = null;
-    void scan.startScan(file);
-  }, [scan]);
+    const projectName = file.name.replace(/\.zip$/i, '') || 'repository';
+    setPendingSource({ type: 'zip', file, projectName });
+    setPendingIntake(createDefaultProjectIntake(projectName));
+    setSubmittedIntake(undefined);
+    setSubmittedIntakeSkipped(false);
+  }, []);
 
   const handleGitHubImport = useCallback((url: string, branch?: string) => {
     setSampleReport(null);
     savedReportKey.current = null;
     lastError.current = null;
-    void scan.startGitHubScan(url, branch);
-  }, [scan]);
+    const projectName = githubProjectName(url);
+    setPendingSource({ type: 'github', url, branch, projectName });
+    setPendingIntake(createDefaultProjectIntake(projectName));
+    setSubmittedIntake(undefined);
+    setSubmittedIntakeSkipped(false);
+  }, []);
+
+  const startPendingScan = useCallback((skipIntake: boolean) => {
+    if (!pendingSource) return;
+    const intake = skipIntake ? createDefaultProjectIntake(pendingSource.projectName) : pendingIntake;
+
+    setSubmittedIntake(intake);
+    setSubmittedIntakeSkipped(skipIntake);
+    setSampleReport(null);
+    savedReportKey.current = null;
+    lastError.current = null;
+
+    if (pendingSource.type === 'zip') {
+      void scan.startScan(pendingSource.file);
+    } else {
+      void scan.startGitHubScan(pendingSource.url, pendingSource.branch);
+    }
+  }, [pendingIntake, pendingSource, scan]);
 
   const handleSample = useCallback(() => {
     scan.resetScan();
+    setPendingSource(null);
+    setSubmittedIntake(undefined);
+    setSubmittedIntakeSkipped(false);
     const report = buildSampleReport();
     setSampleReport(report);
     setHistory(saveScanHistory(report));
@@ -93,6 +150,9 @@ const Index = () => {
   const reset = useCallback(() => {
     scan.resetScan();
     setSampleReport(null);
+    setPendingSource(null);
+    setSubmittedIntake(undefined);
+    setSubmittedIntakeSkipped(false);
     savedReportKey.current = null;
     lastError.current = null;
     queueMicrotask(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
@@ -105,12 +165,19 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Nav />
+      <Nav onNavigateAnchor={handleNavAnchor} />
 
       {activeReport ? (
         <main className="pt-20">
           <Suspense fallback={<div className="container py-24 text-sm text-muted-foreground">Loading report...</div>}>
-            <ResultDashboard report={activeReport} history={history} onReset={reset} onClearHistory={handleClearHistory} />
+            <ResultDashboard
+              report={activeReport}
+              history={history}
+              onReset={reset}
+              onClearHistory={handleClearHistory}
+              initialIntake={submittedIntake}
+              intakeSkipped={submittedIntakeSkipped}
+            />
           </Suspense>
         </main>
       ) : (
@@ -135,8 +202,20 @@ const Index = () => {
                   warnings={scan.warnings}
                   onCancel={scan.cancelScan}
                 />
+              ) : pendingSource ? (
+                <ProjectContextStep
+                  sourceLabel={pendingSource.type === 'zip' ? pendingSource.file.name : pendingSource.url}
+                  intake={pendingIntake}
+                  onChange={setPendingIntake}
+                  onBack={() => setPendingSource(null)}
+                  onContinue={() => startPendingScan(false)}
+                  onSkip={() => startPendingScan(true)}
+                />
               ) : (
                 <>
+                  <div className="mb-5">
+                    <FlowSteps activeStep={1} />
+                  </div>
                   <UploadDropzone onFile={handleFile} onGitHubImport={handleGitHubImport} />
                   {scan.status === 'cancelled' && (
                     <div className="mt-4 text-center text-sm text-muted-foreground">Scan cancelled.</div>
@@ -150,5 +229,69 @@ const Index = () => {
     </div>
   );
 };
+
+function githubProjectName(url: string) {
+  try {
+    const parsed = parseGitHubUrl(url);
+    return parsed.repo;
+  } catch {
+    return 'repository';
+  }
+}
+
+function ProjectContextStep({
+  sourceLabel,
+  intake,
+  onChange,
+  onBack,
+  onContinue,
+  onSkip,
+}: {
+  sourceLabel: string;
+  intake: ProjectIntake;
+  onChange: (value: ProjectIntake) => void;
+  onBack: () => void;
+  onContinue: () => void;
+  onSkip: () => void;
+}) {
+  return (
+    <div className="space-y-5">
+      <FlowSteps activeStep={2} />
+      <div className="rounded-2xl border border-border/60 bg-secondary/25 px-4 py-3 text-sm text-muted-foreground">
+        Repository selected: <span className="text-foreground/90 font-medium break-all">{sourceLabel}</span>
+      </div>
+      <ProjectIntakeForm value={intake} onChange={onChange} />
+      <div className="flex flex-col sm:flex-row gap-3 justify-end">
+        <Button type="button" variant="ghost" onClick={onBack}>Back to repository source</Button>
+        <Button type="button" variant="outline" onClick={onSkip}>Skip intake and scan repository only</Button>
+        <Button type="button" className="bg-gradient-primary border-0 shadow-glow hover:opacity-90" onClick={onContinue}>
+          Continue with project context
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function FlowSteps({ activeStep }: { activeStep: number }) {
+  const steps = [
+    'Step 1: Add repository',
+    'Step 2: Add project context',
+    'Step 3: Generate Delivery Pack',
+    'Step 4: Review and export',
+  ];
+
+  return (
+    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
+      {steps.map((step, index) => (
+        <div
+          key={step}
+          className={`rounded-lg border px-3 py-2 text-xs ${index + 1 === activeStep ? 'border-primary/50 bg-primary/10 text-foreground' : 'border-border/60 bg-secondary/20 text-muted-foreground'}`}
+        >
+          {step}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default Index;

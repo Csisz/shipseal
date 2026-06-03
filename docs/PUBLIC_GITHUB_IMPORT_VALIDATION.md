@@ -52,7 +52,7 @@ Expected result: the endpoint returns an `application/zip` response for the publ
 If GitHub import is blocked or unavailable, the UI should explain:
 
 ```text
-Browser restrictions blocked the GitHub ZIP download. Download the repository as ZIP from GitHub and upload it manually, or use the future hosted proxy import.
+Browser restrictions blocked the GitHub ZIP download. Download the repository as ZIP from GitHub and upload it manually.
 ```
 
 The GitHub tab should also show:
@@ -78,5 +78,5 @@ This fallback is acceptable for the MVP. Browser-based public GitHub import can 
 - GitHub App installation.
 - OAuth.
 - User-pasted tokens.
-- Backend proxying in the current MVP. A future hosted proxy plan is documented in [GitHub Import Proxy Plan](GITHUB_IMPORT_PROXY_PLAN.md).
+- Private repository backend proxying. The current proxy is public-repo-only and documented in [GitHub Import Proxy Plan](GITHUB_IMPORT_PROXY_PLAN.md).
 - Server-side GitHub workers.

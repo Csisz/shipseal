@@ -32,6 +32,21 @@ export function ProjectIntakeForm({ value, onChange }: Props) {
           <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Load demo project
         </Button>
       </div>
+      <p className="text-sm text-muted-foreground leading-relaxed mb-2 max-w-3xl">
+        Repository scan tells ShipSeal what the code looks like. Project Intake tells ShipSeal what the AI product is used for. This improves the client report, AI Act readiness notes, transparency notice, red-team tests and handoff recommendations.
+      </p>
+      <p className="text-xs text-primary-glow mb-4">Optional, but recommended for client-ready reports.</p>
+      <div className="mb-5 rounded-lg border border-border/60 bg-secondary/25 px-4 py-3">
+        <div className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-2">Used for</div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-2 text-xs text-foreground/85">
+          <span>Client handoff report</span>
+          <span>AI Act readiness pre-screen</span>
+          <span>Transparency notice draft</span>
+          <span>Eval and red-team test context</span>
+          <span>Go/no-go risk notes</span>
+        </div>
+        <div className="mt-3 text-xs text-warning">Client report quality improves when these fields are completed.</div>
+      </div>
 
       <div className="grid md:grid-cols-2 gap-4">
         <Field label="Project name">

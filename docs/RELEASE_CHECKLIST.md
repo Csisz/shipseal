@@ -50,6 +50,8 @@ Known non-blocking warning: shadcn/ui fast-refresh warnings may appear in lint. 
 - [ ] Test public GitHub import success or graceful fallback.
 - [ ] Export ShipSeal Delivery Pack ZIP.
 - [ ] Export `score.json`.
+- [ ] Open HTML client report.
+- [ ] Download PDF client report.
 - [ ] Check mobile width.
 - [ ] Check browser console for obvious runtime errors.
 
@@ -58,6 +60,7 @@ Known non-blocking warning: shadcn/ui fast-refresh warnings may appear in lint. 
 - [ ] Download `AGENT_READINESS_REPORT.md`.
 - [ ] Download `score.json`.
 - [ ] Download the full ShipSeal Delivery Pack ZIP.
+- [ ] Download `shipseal-client-report-[project].pdf`.
 - [ ] Confirm ZIP includes `01-agent-instructions/`.
 - [ ] Confirm ZIP includes `03-mcp-governance/`.
 - [ ] Confirm ZIP includes `07-context/REPO_CONTEXT_PACK.md` and `07-context/repo-context-pack.json`.
@@ -69,6 +72,7 @@ Known non-blocking warning: shadcn/ui fast-refresh warnings may appear in lint. 
 - [ ] Confirm localStorage does not contain raw file contents, Delivery Pack file contents, or full Repo Context Pack contents.
 - [ ] Confirm AI narrative does not mark a blocked repo ready.
 - [ ] Confirm MCP Readiness remains separate from main Agent Readiness.
+- [ ] Confirm AI Act and client report copy says this is not legal advice.
 
 ## Accessibility Basics
 

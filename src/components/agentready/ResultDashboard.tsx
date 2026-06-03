@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type React from 'react';
 import { AlertOctagon, Check, CheckCircle2, Copy, Download, FileArchive, Layers, Lightbulb, RefreshCw, ShieldCheck, Sparkles, Trash2 } from 'lucide-react';
 import type { AgentPackFile, MCPRiskSeverity, ReadinessReport, ScanHistoryItem } from '@/lib/types';
 import { evaluateReadiness } from '@/lib/scoring';
@@ -13,18 +14,23 @@ import { Badge } from '@/components/ui/badge';
 import { buildRepoContextPackJson, buildScoreJson, downloadJsonFile, downloadTextFile } from '@/lib/exports';
 import { formatFileSize } from '@/lib/uploadValidation';
 import { criticalBlockersEmptyStateText, displayReadinessLevel } from '@/lib/uiCopy';
-import { createDefaultProjectIntake } from '@/lib/intake';
+import type { ProjectIntake } from '@/lib/intake';
+import { createDefaultProjectIntake, normalizeProjectIntake } from '@/lib/intake';
 
 interface Props {
   report: ReadinessReport;
   history: ScanHistoryItem[];
   onReset: () => void;
   onClearHistory: () => void;
+  initialIntake?: ProjectIntake;
+  intakeSkipped?: boolean;
 }
 
-export function ResultDashboard({ report, history, onReset, onClearHistory }: Props) {
+export function ResultDashboard({ report, history, onReset, onClearHistory, initialIntake, intakeSkipped = false }: Props) {
   const [contextCopied, setContextCopied] = useState(false);
-  const [projectIntake, setProjectIntake] = useState(() => createDefaultProjectIntake(report.repoName));
+  const [appliedIntake, setAppliedIntake] = useState(() => normalizeProjectIntake(initialIntake, report.repoName));
+  const [draftIntake, setDraftIntake] = useState(() => normalizeProjectIntake(initialIntake, report.repoName));
+  const [wasIntakeSkipped, setWasIntakeSkipped] = useState(intakeSkipped);
   const readiness = evaluateReadiness(report.score, report.blockers);
   const ready = readiness.isReady;
   const readinessReport = report.agentPack.find(file => file.name === 'AGENT_READINESS_REPORT.md');
@@ -43,8 +49,20 @@ export function ResultDashboard({ report, history, onReset, onClearHistory }: Pr
   };
 
   useEffect(() => {
-    setProjectIntake(createDefaultProjectIntake(report.repoName));
-  }, [report.repoName, report.scannedAt]);
+    const nextIntake = normalizeProjectIntake(initialIntake, report.repoName);
+    setAppliedIntake(nextIntake);
+    setDraftIntake(nextIntake);
+    setWasIntakeSkipped(intakeSkipped);
+  }, [initialIntake, intakeSkipped, report.repoName, report.scannedAt]);
+
+  const intakeDirty = !sameIntake(appliedIntake, draftIntake);
+  const regenerateReport = () => {
+    setAppliedIntake(normalizeProjectIntake(draftIntake, report.repoName));
+    setWasIntakeSkipped(false);
+  };
+  const clearIntake = () => {
+    setDraftIntake(createDefaultProjectIntake(report.repoName));
+  };
 
   return (
     <section className="container py-12 md:py-16 animate-fade-in-up">
@@ -72,7 +90,7 @@ export function ResultDashboard({ report, history, onReset, onClearHistory }: Pr
               <SummaryTile label="Score" value={`${report.score}/100`} />
               <SummaryTile label="Status" value={displayReadinessLevel(readiness.level)} />
               <SummaryTile label="Blockers" value={String(report.blockers.length)} />
-              <SummaryTile label="Delivery Pack" value="Full pack · 27 outputs" />
+              <SummaryTile label="Delivery Pack" value="Full pack - 27 outputs" />
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
               Agent instructions, skills, MCP governance, tests, AI Act readiness and client handoff report.
@@ -119,6 +137,22 @@ export function ResultDashboard({ report, history, onReset, onClearHistory }: Pr
         </div>
       </div>
 
+      <div className="grid lg:grid-cols-2 gap-6 mb-8">
+        <DecisionSummary report={report} ready={ready} nextActions={report.aiNarrative.nextBestActions.slice(0, 3)} />
+        <ProjectContextPanel
+          appliedIntake={appliedIntake}
+          draftIntake={draftIntake}
+          skipped={wasIntakeSkipped}
+          dirty={intakeDirty}
+          onDraftChange={setDraftIntake}
+          onRegenerate={regenerateReport}
+          onClear={clearIntake}
+        />
+      </div>
+
+      <DeliveryPackPreview report={report} intake={appliedIntake} intakeSkipped={wasIntakeSkipped} />
+
+      <Disclosure title="Detailed scan results, governance and generated file previews">
       <div className="glass rounded-2xl p-6 mb-8">
         <div className="flex flex-wrap items-start gap-3 mb-5">
           <Sparkles className={ready ? 'h-4 w-4 text-success mt-1' : 'h-4 w-4 text-accent mt-1'} />
@@ -340,8 +374,6 @@ export function ResultDashboard({ report, history, onReset, onClearHistory }: Pr
           </pre>
         </div>
         <div className="lg:col-span-2">
-          <ProjectIntakeForm value={projectIntake} onChange={setProjectIntake} />
-          <DeliveryPackPreview report={report} intake={projectIntake} />
           <h3 className="font-display text-xl font-semibold mb-3">Delivery Pack file preview</h3>
           <AgentPackTabs
             files={report.agentPack}
@@ -349,7 +381,7 @@ export function ResultDashboard({ report, history, onReset, onClearHistory }: Pr
             mcpFiles={report.mcpReadiness.generatedFiles}
             contextFiles={{ markdown: report.contextPack, json: repoContextJson }}
             scoreJson={scoreJson}
-            intake={projectIntake}
+            intake={appliedIntake}
           />
           <h3 className="font-display text-xl font-semibold mt-8 mb-3">MCP Governance Pack</h3>
           <AgentPackTabs files={mcpPackFiles} />
@@ -357,6 +389,7 @@ export function ResultDashboard({ report, history, onReset, onClearHistory }: Pr
       </div>
 
       <RecentScans history={history} onClear={onClearHistory} />
+      </Disclosure>
     </section>
   );
 }
@@ -375,6 +408,120 @@ function SummaryTile({ label, value }: { label: string; value: string }) {
       <div className="mt-1 text-sm font-semibold truncate">{value}</div>
     </div>
   );
+}
+
+function Disclosure({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <details className="mb-8 rounded-2xl border border-border/60 bg-secondary/15 p-4">
+      <summary className="cursor-pointer select-none font-display font-semibold text-foreground">
+        {title}
+      </summary>
+      <div className="mt-5">
+        {children}
+      </div>
+    </details>
+  );
+}
+
+function ProjectContextPanel({
+  appliedIntake,
+  draftIntake,
+  skipped,
+  dirty,
+  onDraftChange,
+  onRegenerate,
+  onClear,
+}: {
+  appliedIntake: ProjectIntake;
+  draftIntake: ProjectIntake;
+  skipped: boolean;
+  dirty: boolean;
+  onDraftChange: (value: ProjectIntake) => void;
+  onRegenerate: () => void;
+  onClear: () => void;
+}) {
+  return (
+    <div className="glass rounded-2xl p-6">
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        <FileArchive className="h-4 w-4 text-primary-glow" />
+        <h3 className="font-display font-semibold">Project context used for this report</h3>
+        <Badge variant="outline" className={skipped ? 'ml-auto border-warning/60 text-warning' : 'ml-auto border-success/40 text-success'}>
+          {skipped ? 'Intake skipped' : 'Context applied'}
+        </Badge>
+      </div>
+      {skipped && (
+        <div className="mb-4 rounded-lg border border-warning/35 bg-warning/10 px-4 py-3 text-sm text-warning">
+          Client report quality is limited because project intake was skipped.
+        </div>
+      )}
+      {dirty && (
+        <div className="mb-4 rounded-lg border border-accent/35 bg-accent/10 px-4 py-3 text-sm text-accent">
+          Project context was edited. Regenerate the report to update Delivery Pack outputs.
+        </div>
+      )}
+      <div className="space-y-2 text-sm">
+        <Row label="Project" value={appliedIntake.projectName || 'Not provided'} />
+        <Row label="Client" value={appliedIntake.clientName || 'Not provided'} />
+        <Row label="Agency" value={appliedIntake.agencyName || 'Not provided'} />
+        <Row label="AI use case" value={appliedIntake.aiUseCase || 'Not provided'} />
+        <Row label="EU / personal data" value={`${appliedIntake.usedInEU ? 'EU use' : 'EU unknown'} / ${appliedIntake.handlesPersonalData ? 'personal data' : 'personal data unknown'}`} />
+      </div>
+      <details className="mt-5 rounded-lg border border-border/60 bg-secondary/20 p-3">
+        <summary className="cursor-pointer select-none text-sm font-medium">Edit project context</summary>
+        <div className="mt-4">
+          <ProjectIntakeForm value={draftIntake} onChange={onDraftChange} />
+          <div className="flex flex-col sm:flex-row justify-end gap-3">
+            <Button type="button" variant="ghost" onClick={onClear}>Clear intake</Button>
+            <Button type="button" disabled={!dirty} onClick={onRegenerate} className="bg-gradient-primary border-0 shadow-glow hover:opacity-90">
+              Regenerate report with updated intake
+            </Button>
+          </div>
+        </div>
+      </details>
+    </div>
+  );
+}
+
+function DecisionSummary({ report, ready, nextActions }: { report: ReadinessReport; ready: boolean; nextActions: string[] }) {
+  const risks = report.blockers.slice(0, 3).map(blocker => blocker.title || 'Critical blocker');
+  const fallbackRisks = report.improvements.slice(0, 3).map(improvement => improvement.title || improvement.category);
+  const visibleRisks = risks.length ? risks : fallbackRisks.length ? fallbackRisks : ['No major delivery risks detected from available scan data'];
+  const visibleActions = nextActions.length ? nextActions : ['Review the Delivery Pack with the client', 'Complete project intake fields', 'Run test and build commands before handoff'];
+
+  return (
+    <div className="glass rounded-2xl p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <CheckCircle2 className={ready ? 'h-4 w-4 text-success' : 'h-4 w-4 text-warning'} />
+        <h3 className="font-display font-semibold">Handoff decision summary</h3>
+        <Badge variant="outline" className={ready ? 'ml-auto border-success/40 text-success' : 'ml-auto border-warning/60 text-warning'}>
+          {ready ? 'Go / review' : 'Needs remediation'}
+        </Badge>
+      </div>
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div>
+          <div className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-2">Top risks</div>
+          <ul className="space-y-2 text-sm text-foreground/90">
+            {visibleRisks.map(risk => (
+              <li key={risk} className="flex gap-2">
+                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-warning shrink-0" />
+                <span>{risk}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <div className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-2">Next 3 actions</div>
+          <ol className="space-y-2 text-sm text-foreground/90 list-decimal list-inside">
+            {visibleActions.slice(0, 3).map(action => <li key={action}>{action}</li>)}
+          </ol>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function sameIntake(a: ProjectIntake, b: ProjectIntake) {
+  return JSON.stringify(a) === JSON.stringify(b);
 }
 
 function SafetyMetric({ label, value }: { label: string; value: string }) {

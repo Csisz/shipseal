@@ -71,7 +71,7 @@ Do not add OpenAI, Anthropic, GitHub, Stripe, or private API keys to the client-
 1. Open the hosted URL.
 2. Click `Try sample project`.
 3. In Project Intake, click `Load demo project`.
-4. Click `Open HTML report and save as PDF`, then use browser Print / Save as PDF if needed.
+4. Click `Download PDF report`, then use `Open HTML report` as the Print / Save as PDF fallback if needed.
 5. Click `Download ShipSeal Delivery Pack`.
 6. Review `06-client-handoff/CLIENT_HANDOFF_REPORT.html` and `score.json`.
 7. Return to the scan form and test ZIP upload.

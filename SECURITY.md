@@ -6,11 +6,11 @@ ShipSeal is a local-first demo MVP for repository readiness scanning.
 
 ShipSeal does not execute uploaded or imported repository code. The scanner reads ZIP metadata, filenames, sizes, and a bounded subset of small text/config files such as `package.json`, `README.md`, `.gitignore`, `.env.example`, and instruction files.
 
-## Local Browser Scanning
+## Local Browser Scanning And Hosted Proxy
 
-The current MVP runs in the browser and has no backend, database, authentication, private repository access, external AI API calls, or server-side secret storage.
+The current MVP runs scanning and generation in the browser. It has no database, authentication, private repository access, external AI API calls, or server-side secret storage.
 
-Public GitHub import attempts to fetch public repository ZIP archives from the browser. If browser import fails, users should download the ZIP manually from GitHub and upload it.
+Hosted Vercel demos include a minimal same-origin proxy at `/api/github-archive` for public GitHub ZIP archives. The proxy is tokenless, public-repo-only, does not persist ZIP files, and must not be used for private repositories. If GitHub import fails, users should download the ZIP manually from GitHub and upload it.
 
 ## Secrets
 
@@ -27,3 +27,7 @@ Replace this placeholder contact before any production launch.
 ## Future Hardening
 
 Future backend or worker implementations should add isolated scanning workers, malware checks, strict retention, audit logging, least-privilege GitHub App access, server-side secret management, and redaction controls before handling private repositories.
+
+## Legal And Compliance Disclaimer
+
+ShipSeal readiness output is not legal advice, not a formal legal opinion, not a production security audit, and not a compliance certification. AI Act readiness files are preliminary technical and product-side review aids.

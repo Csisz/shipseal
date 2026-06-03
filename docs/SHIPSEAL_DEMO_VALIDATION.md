@@ -57,7 +57,7 @@ Client report quality improves when the intake is complete. For a real demo, fil
 - Confirm the required Delivery Pack file list is visible.
 - Confirm the print-ready report helper explains that the HTML report can be opened in a browser and saved as PDF.
 
-10. Click `Open HTML report and save as PDF`.
+10. Click `Download PDF report`, then click `Open HTML report` to confirm the fallback path.
 
 11. Confirm the standalone HTML report opens. Use browser Print / Save as PDF if a PDF is needed.
 
