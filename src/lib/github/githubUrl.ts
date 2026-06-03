@@ -19,7 +19,7 @@ function zipBranch(branch?: string) {
 }
 
 export function buildDefaultGitHubZipUrl(owner: string, repo: string, branch?: string) {
-  return `https://github.com/${owner}/${repo}/archive/${zipBranch(branch)}.zip`;
+  return `https://codeload.github.com/${owner}/${repo}/zip/${zipBranch(branch)}`;
 }
 
 export function parseGitHubUrl(rawValue: string): ParsedGitHubUrl {

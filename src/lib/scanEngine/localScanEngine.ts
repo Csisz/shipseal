@@ -54,7 +54,7 @@ export class LocalScanEngine implements ScanEngine {
         try {
           scanInput = await scanZipFile(input.file);
           scanInput.source = input.source || {
-            sourceType: input.mode === 'github-public' ? 'github-public' : 'zip-upload',
+            sourceType: input.mode === 'github-public' ? 'github-url' : 'zip-upload',
           };
           if (input.source?.githubOwner && input.source.githubRepo) {
             scanInput.repoName = `${input.source.githubOwner}/${input.source.githubRepo}`;
@@ -66,7 +66,7 @@ export class LocalScanEngine implements ScanEngine {
           callbacks.onWarning?.('Could not parse this ZIP fully; produced a deterministic fallback report.');
           scanInput = fallbackScan(input.file);
           scanInput.source = input.source || {
-            sourceType: input.mode === 'github-public' ? 'github-public' : 'zip-upload',
+            sourceType: input.mode === 'github-public' ? 'github-url' : 'zip-upload',
           };
           if (input.source?.githubOwner && input.source.githubRepo) {
             scanInput.repoName = `${input.source.githubOwner}/${input.source.githubRepo}`;

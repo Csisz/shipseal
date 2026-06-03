@@ -93,14 +93,14 @@ export function UploadDropzone({ onFile, onGitHubImport, disabled }: Props) {
             </div>
             <div>
               <div className="font-display text-lg font-semibold">Import a public GitHub repo</div>
-              <div className="text-sm text-muted-foreground">Paste a public GitHub repository URL. No tokens or credentials are used.</div>
+              <div className="text-sm text-muted-foreground">Paste a public GitHub repository URL or upload a ZIP.</div>
             </div>
           </div>
           <div className="space-y-3">
             <Input
               value={githubUrl}
               onChange={event => setGithubUrl(event.target.value)}
-              placeholder="https://github.com/owner/repo"
+              placeholder="https://github.com/Csisz/shipseal"
               disabled={disabled}
             />
             <Input
@@ -111,9 +111,10 @@ export function UploadDropzone({ onFile, onGitHubImport, disabled }: Props) {
             />
           </div>
           <div className="mt-4 text-xs text-muted-foreground/80 space-y-1">
-            <div>Example: <span className="font-mono text-foreground/80">https://github.com/owner/repo</span></div>
-            <div>Public repositories only. Private GitHub repos will require a future GitHub App integration.</div>
-            <div>If automatic import is unavailable, download the repository ZIP from GitHub and upload it manually.</div>
+            <div>Examples: <span className="font-mono text-foreground/80">https://github.com/Csisz/shipseal</span>, <span className="font-mono text-foreground/80">github.com/Csisz/shipseal</span>, or a <span className="font-mono text-foreground/80">.git</span> URL.</div>
+            <div>Only public GitHub repositories are supported in the local MVP. Private repositories are not supported.</div>
+            <div>If import fails because of browser or network restrictions, use ZIP upload.</div>
+            <div>If GitHub import fails, download the repository as ZIP and upload it manually.</div>
             {!githubUrl.trim() && <div className="text-accent">Enter a GitHub URL to enable import.</div>}
           </div>
           <Button

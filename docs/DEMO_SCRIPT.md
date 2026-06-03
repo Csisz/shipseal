@@ -46,7 +46,7 @@ Open the Repo Context Pack area.
 
 Click `Scan another repo`, then open `Import from GitHub`.
 
-"For demos, users can paste a public GitHub repo URL. If the browser can download the public ZIP, AgentReady scans it locally. If browser import fails, the app falls back cleanly to manual ZIP upload."
+"For demos, users can paste a public GitHub repo URL. If the browser can download the public ZIP, ShipSeal scans it locally. If browser import fails, the app falls back cleanly to manual ZIP upload."
 
 ### 9. Show Exports
 

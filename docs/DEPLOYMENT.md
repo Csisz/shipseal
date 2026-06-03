@@ -35,7 +35,7 @@ AgentReady can be deployed as a static React/Vite application on Vercel or Netli
 
 ## GitHub Import Limitations
 
-Public GitHub import attempts browser ZIP downloads from GitHub. Browser import may fail because of CORS, network policy, repository availability, branch naming, or ZIP size limits. The supported fallback is to download the repository ZIP from GitHub and upload it manually.
+Public GitHub import attempts browser ZIP downloads from GitHub. Browser import may fail because of CORS, network policy, repository availability, branch naming, or ZIP size limits. The supported fallback is to download the repository as ZIP and upload it manually.
 
 Private repositories require a future backend/GitHub App integration. Do not add user-pasted tokens or private credentials to the browser.
 

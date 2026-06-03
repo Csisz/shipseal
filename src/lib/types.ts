@@ -104,7 +104,7 @@ export interface RepoContextPackSummary {
   };
 }
 
-export type ScanSourceType = 'zip-upload' | 'github-public';
+export type ScanSourceType = 'zip-upload' | 'github-url' | 'github-public';
 
 export interface ScanSourceMetadata {
   sourceType: ScanSourceType;

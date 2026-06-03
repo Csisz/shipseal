@@ -45,6 +45,25 @@ Vite defaults to port `8080`. If that port is busy, Vite may choose another port
 
 For the full manual checklist, see [ShipSeal Demo Validation](docs/SHIPSEAL_DEMO_VALIDATION.md).
 
+## Public GitHub Import
+
+ShipSeal supports best-effort public GitHub repository import in the browser. Supported examples include `https://github.com/Csisz/shipseal`, `https://github.com/Csisz/shipseal.git`, and `github.com/Csisz/shipseal`. Optional branch input is available when a known public branch should be scanned.
+
+Only public GitHub repositories are supported in the local MVP. Private repositories, tokens, OAuth, and GitHub App installation are not supported yet. If browser or network restrictions block GitHub import, download the repository as ZIP and upload it manually.
+
+Privacy note: uploaded ZIP scanning stays local/browser-side. ShipSeal does not execute uploaded code.
+
+## Deploy Demo
+
+```bash
+npm install
+npm run test
+npm run build
+npm run dev
+```
+
+For Vercel or Netlify, use `npm run build` and publish the `dist` directory. No environment variables are required for the current MVP. See [Hosted Demo Readiness](docs/HOSTED_DEMO_READINESS.md) for the full deployment and validation checklist.
+
 ## Sample / Demo Output
 
 ShipSeal includes a dogfooding sample for a realistic `Customer Support RAG Assistant`. The sample simulates an AI support app that answers questions from a knowledge base, is used in the EU, may handle personal data, generates user-facing AI answers, and has human escalation for uncertain or sensitive cases.
@@ -136,6 +155,8 @@ ShipSeal is a React/Vite/shadcn application with local-first scanning.
 - [Release Checklist](docs/RELEASE_CHECKLIST.md)
 - [Demo Script](docs/DEMO_SCRIPT.md)
 - [Demo Validation](docs/SHIPSEAL_DEMO_VALIDATION.md)
+- [Hosted Demo Readiness](docs/HOSTED_DEMO_READINESS.md)
+- [Public GitHub Import Validation](docs/PUBLIC_GITHUB_IMPORT_VALIDATION.md)
 - [Sample Delivery Pack Review](docs/SAMPLE_DELIVERY_PACK_REVIEW.md)
 - [Sample Repos](docs/SAMPLE_REPOS.md)
 

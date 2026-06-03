@@ -62,7 +62,7 @@ export function ResultDashboard({ report, history, onReset, onClearHistory }: Pr
             <h1 className="font-display text-3xl md:text-4xl font-bold mb-2 truncate">{report.repoName}</h1>
             <div className="text-sm text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1">
               <span><span className="text-foreground/80 font-medium">{report.stack.primary}</span> - {report.stack.languages.join(', ') || 'unknown'}</span>
-              <span>{report.source.sourceType === 'github-public' ? `GitHub: ${report.source.githubOwner}/${report.source.githubRepo}${report.source.githubBranch ? ` @ ${report.source.githubBranch}` : ''}` : 'ZIP upload'}</span>
+              <span>{isGitHubSource(report.source.sourceType) ? `GitHub: ${report.source.githubOwner}/${report.source.githubRepo}${report.source.githubBranch ? ` @ ${report.source.githubBranch}` : ''}` : 'ZIP upload'}</span>
               <span>{report.fileCount.toLocaleString()} files</span>
               <span>{(report.totalSizeBytes / 1024).toFixed(0)} KB</span>
               <span>scanned {new Date(report.scannedAt).toLocaleTimeString()}</span>
@@ -434,7 +434,7 @@ function RecentScans({ history, onClear }: { history: ScanHistoryItem[]; onClear
                 <span className={item.criticalBlockerCount ? 'text-destructive' : 'text-success'}>{item.criticalBlockerCount}</span>
               </div>
               <div className="mt-1 text-[11px] text-muted-foreground truncate">
-                {item.sourceType === 'github-public' ? `GitHub ${item.githubOwner}/${item.githubRepo}${item.githubBranch ? ` @ ${item.githubBranch}` : ''}` : 'ZIP upload'}
+                {isGitHubSource(item.sourceType) ? `GitHub ${item.githubOwner}/${item.githubRepo}${item.githubBranch ? ` @ ${item.githubBranch}` : ''}` : 'ZIP upload'}
               </div>
               <div className="mt-1 flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
                 <span>MCP</span>
@@ -468,4 +468,8 @@ function Row({ label, value }: { label: string; value: string }) {
       <span className="text-foreground/90 text-right truncate">{value}</span>
     </div>
   );
+}
+
+function isGitHubSource(sourceType?: string) {
+  return sourceType === 'github-url' || sourceType === 'github-public';
 }

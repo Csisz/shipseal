@@ -359,7 +359,7 @@ describe('Sprint 7 GitHub public repo import', () => {
       owner: 'agentready',
       repo: 'demo-repo',
       normalizedUrl: 'https://github.com/agentready/demo-repo',
-      defaultZipUrl: 'https://github.com/agentready/demo-repo/archive/HEAD.zip',
+      defaultZipUrl: 'https://codeload.github.com/agentready/demo-repo/zip/HEAD',
     });
   });
 
@@ -379,7 +379,7 @@ describe('Sprint 7 GitHub public repo import', () => {
       repo: 'demo-repo',
       branch: 'feature/public-import',
       normalizedUrl: 'https://github.com/agentready/demo-repo/tree/feature/public-import',
-      defaultZipUrl: 'https://github.com/agentready/demo-repo/archive/refs/heads/feature/public-import.zip',
+      defaultZipUrl: 'https://codeload.github.com/agentready/demo-repo/zip/refs/heads/feature/public-import',
     });
   });
 
@@ -392,8 +392,8 @@ describe('Sprint 7 GitHub public repo import', () => {
   });
 
   it('GitHub ZIP URL builder returns expected URL shape', () => {
-    expect(buildGitHubZipUrl('agentready', 'demo-repo')).toBe('https://github.com/agentready/demo-repo/archive/HEAD.zip');
-    expect(buildGitHubZipUrl('agentready', 'demo-repo', 'feature/public-import')).toBe('https://github.com/agentready/demo-repo/archive/refs/heads/feature/public-import.zip');
+    expect(buildGitHubZipUrl('agentready', 'demo-repo')).toBe('https://codeload.github.com/agentready/demo-repo/zip/HEAD');
+    expect(buildGitHubZipUrl('agentready', 'demo-repo', 'feature/public-import')).toBe('https://codeload.github.com/agentready/demo-repo/zip/refs/heads/feature/public-import');
   });
 
   it('GitHub import failure returns user-friendly fallback error', async () => {
@@ -405,7 +405,7 @@ describe('Sprint 7 GitHub public repo import', () => {
       .rejects
       .toMatchObject({
         name: 'GitHubImportError',
-        fallbackMessage: 'Automatic GitHub import is unavailable for this repository. Please download the repository ZIP from GitHub and upload it manually.',
+        fallbackMessage: 'If GitHub import fails, download the repository as ZIP and upload it manually.',
       } satisfies Partial<GitHubImportError>);
   });
 
@@ -421,7 +421,7 @@ describe('Sprint 7 GitHub public repo import', () => {
       file,
       mode: 'github-public',
       source: {
-        sourceType: 'github-public',
+        sourceType: 'github-url',
         githubOwner: 'agentready',
         githubRepo: 'demo-repo',
         githubBranch: 'main',
@@ -431,7 +431,7 @@ describe('Sprint 7 GitHub public repo import', () => {
 
     expect(report.repoName).toBe('agentready/demo-repo');
     expect(report.source).toMatchObject({
-      sourceType: 'github-public',
+      sourceType: 'github-url',
       githubOwner: 'agentready',
       githubRepo: 'demo-repo',
       githubBranch: 'main',
@@ -449,7 +449,7 @@ describe('Sprint 7 GitHub public repo import', () => {
       ),
       repoName: 'agentready/demo-repo',
       source: {
-        sourceType: 'github-public',
+        sourceType: 'github-url',
         githubOwner: 'agentready',
         githubRepo: 'demo-repo',
         githubBranch: 'main',
@@ -459,7 +459,7 @@ describe('Sprint 7 GitHub public repo import', () => {
     const scoreJson = buildScoreJson(report);
 
     expect(scoreJson.source).toMatchObject({
-      sourceType: 'github-public',
+      sourceType: 'github-url',
       githubOwner: 'agentready',
       githubRepo: 'demo-repo',
       githubBranch: 'main',
@@ -478,7 +478,7 @@ describe('Sprint 7 GitHub public repo import', () => {
       ),
       repoName: 'agentready/demo-repo',
       source: {
-        sourceType: 'github-public',
+        sourceType: 'github-url',
         githubOwner: 'agentready',
         githubRepo: 'demo-repo',
         githubBranch: 'main',
@@ -490,7 +490,7 @@ describe('Sprint 7 GitHub public repo import', () => {
     const stored = window.localStorage.getItem(scanHistoryStorageKey()) || '';
 
     expect(history[0]).toMatchObject({
-      sourceType: 'github-public',
+      sourceType: 'github-url',
       githubOwner: 'agentready',
       githubRepo: 'demo-repo',
       githubBranch: 'main',

@@ -25,7 +25,7 @@ Sprint 7 adds a client-side public GitHub import path:
 2. `src/lib/github/githubUrl.ts` validates and normalizes public `github.com` repository URLs.
 3. `src/lib/github/githubImport.ts` builds a public archive ZIP URL and attempts a browser `fetch`.
 4. The downloaded Blob is converted into a File-compatible object.
-5. `LocalScanEngine` scans the ZIP with `mode: 'github-public'`.
+5. `LocalScanEngine` scans the ZIP with `mode: 'github-public'` and preserves source metadata as `sourceType: github-url`.
 6. The final `ReadinessReport` includes lightweight source metadata.
 
 If fetch fails due to CORS, network behavior, private repository access, missing repository, branch mismatch, or ZIP size limits, AgentReady shows the manual ZIP fallback message. No GitHub token or credential is requested.
@@ -34,7 +34,7 @@ If fetch fails due to CORS, network behavior, private repository access, missing
 
 Reports, `score.json`, Agent readiness reports, and recent scan history can include:
 
-- `sourceType`: `zip-upload` or `github-public`
+- `sourceType`: `zip-upload` or `github-url`
 - GitHub owner, repo, and branch when applicable
 - normalized source URL when applicable
 

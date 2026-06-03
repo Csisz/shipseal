@@ -33,7 +33,7 @@ Known non-blocking warning: shadcn/ui fast-refresh warnings may appear in lint. 
 - [ ] Paste a public repo URL such as `https://github.com/owner/repo`.
 - [ ] Confirm the app shows public-repo-only guidance.
 - [ ] If browser import succeeds, confirm the normal scan flow runs.
-- [ ] If browser import fails, confirm the fallback says to download the GitHub ZIP and upload it manually.
+- [ ] If browser import fails, confirm the fallback says to download the repository as ZIP and upload it manually.
 - [ ] Confirm no tokens, OAuth, credentials, or private repo prompts appear.
 
 ## Deployment QA

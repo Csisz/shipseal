@@ -21,10 +21,10 @@ export interface ImportedGitHubRepo {
 export class GitHubImportError extends Error {
   fallbackMessage: string;
 
-  constructor(message = 'Automatic GitHub import is unavailable for this repository. Please download the repository ZIP from GitHub and upload it manually.') {
+  constructor(message = 'If GitHub import fails, download the repository as ZIP and upload it manually.') {
     super(message);
     this.name = 'GitHubImportError';
-    this.fallbackMessage = 'Automatic GitHub import is unavailable for this repository. Please download the repository ZIP from GitHub and upload it manually.';
+    this.fallbackMessage = 'If GitHub import fails, download the repository as ZIP and upload it manually.';
   }
 }
 
@@ -34,8 +34,8 @@ function encodeBranch(branch: string) {
 
 export function buildGitHubZipUrl(owner: string, repo: string, branch?: string) {
   return branch
-    ? `https://github.com/${owner}/${repo}/archive/refs/heads/${encodeBranch(branch)}.zip`
-    : `https://github.com/${owner}/${repo}/archive/HEAD.zip`;
+    ? `https://codeload.github.com/${owner}/${repo}/zip/refs/heads/${encodeBranch(branch)}`
+    : `https://codeload.github.com/${owner}/${repo}/zip/HEAD`;
 }
 
 function step(callbacks: GitHubImportCallbacks, index: number, progress: number, complete = false) {
@@ -69,19 +69,19 @@ export async function importPublicGitHubRepo(input: GitHubImportInput, callbacks
   try {
     response = await fetch(zipUrl, { method: 'GET', redirect: 'follow' });
   } catch {
-    throw new GitHubImportError('Browser or network access blocked the GitHub ZIP download. Please download the repository ZIP from GitHub and upload it manually.');
+    throw new GitHubImportError('Browser or network restrictions blocked the GitHub ZIP download. If GitHub import fails, download the repository as ZIP and upload it manually.');
   }
 
   if (!response.ok) {
     if (response.status === 404 || response.status === 403) {
-      throw new GitHubImportError('Repository was not found, is private, or cannot be fetched from the browser. Please download the repository ZIP from GitHub and upload it manually.');
+      throw new GitHubImportError('Repository was not found, is private, or cannot be fetched from the browser. If GitHub import fails, download the repository as ZIP and upload it manually.');
     }
     throw new GitHubImportError();
   }
 
   const contentLength = Number(response.headers.get('content-length') || '0');
   if (contentLength > SCANNER_LIMITS.maxZipSizeBytes) {
-    throw new GitHubImportError('GitHub repository ZIP is too large for local scanning. Please download a smaller ZIP or remove generated folders before uploading manually.');
+    throw new GitHubImportError('GitHub repository ZIP is too large for local scanning. Download a smaller repository ZIP or remove generated folders before uploading manually.');
   }
 
   let blob: Blob;
@@ -92,7 +92,7 @@ export async function importPublicGitHubRepo(input: GitHubImportInput, callbacks
   }
 
   if (blob.size > SCANNER_LIMITS.maxZipSizeBytes) {
-    throw new GitHubImportError('GitHub repository ZIP is too large for local scanning. Please download a smaller ZIP or remove generated folders before uploading manually.');
+    throw new GitHubImportError('GitHub repository ZIP is too large for local scanning. Download a smaller repository ZIP or remove generated folders before uploading manually.');
   }
 
   step(callbacks, 1, 28, true);
@@ -101,7 +101,7 @@ export async function importPublicGitHubRepo(input: GitHubImportInput, callbacks
   return {
     file: new File([blob], fileName, { type: 'application/zip' }),
     source: {
-      sourceType: 'github-public',
+      sourceType: 'github-url',
       githubOwner: parsed.owner,
       githubRepo: parsed.repo,
       githubBranch: branch,
