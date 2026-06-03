@@ -7,3 +7,7 @@ export {
   createDefaultProjectIntake,
   normalizeProjectIntake,
 } from './defaults';
+
+export {
+  hasMeaningfulProjectContext,
+} from './completeness';

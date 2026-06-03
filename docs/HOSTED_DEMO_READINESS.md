@@ -15,9 +15,17 @@ Open the local Vite URL shown in the terminal. The default local URL is usually 
 
 ## Environment Variables
 
-No environment variables are required for the current local-first MVP.
+No environment variables are required for the core local-first scan/export demo.
 
-Do not add OpenAI, Anthropic, GitHub, Stripe, or private API keys to the client-side app. The current demo does not need secrets.
+Optional:
+
+- `CONTACT_WEBHOOK_URL`: used by `POST /api/audit-request` to forward founder-reviewed audit requests to a configured webhook.
+
+If `CONTACT_WEBHOOK_URL` is configured, the in-app audit request form validates the payload and forwards it server-side. If it is not configured, the form still validates input but the endpoint returns `503` with `Audit request form is not configured yet.`
+
+Set the variable in Vercel Dashboard -> Project Settings -> Environment Variables. Redeploy Production after changing it.
+
+Do not add OpenAI, Anthropic, GitHub, Stripe, or private API keys to the client-side app. The current demo does not need client-side secrets.
 
 ## Vercel Demo Deployment
 
@@ -26,7 +34,7 @@ Do not add OpenAI, Anthropic, GitHub, Stripe, or private API keys to the client-
    - Build command: `npm run build`
    - Output directory: `dist`
 3. Keep `vercel.json`; it lets Vercel serve API/functions and static assets before the SPA fallback.
-4. Leave environment variables empty unless a future sprint explicitly adds safe public config.
+4. Leave environment variables empty for scan/export-only demos, or set `CONTACT_WEBHOOK_URL` if the audit request form should forward requests.
 5. Deploy. Vercel should also expose the serverless endpoint at `/api/github-archive`.
 6. After deployment, run the manual demo checks below and [Hosted Smoke Test](HOSTED_SMOKE_TEST.md).
 
@@ -48,6 +56,7 @@ Do not add OpenAI, Anthropic, GitHub, Stripe, or private API keys to the client-
 - Public GitHub URL import through the Vercel same-origin archive proxy in hosted demos.
 - Direct public GitHub URL import when browser/network rules allow fetching the public ZIP.
 - Project Intake form.
+- Founder-reviewed audit request form validation. Sending requires optional `CONTACT_WEBHOOK_URL`.
 - ShipSeal score and preview UI.
 - Delivery Pack ZIP export.
 - Print-ready HTML client report.
@@ -59,6 +68,7 @@ Do not add OpenAI, Anthropic, GitHub, Stripe, or private API keys to the client-
 - Private repositories.
 - Authentication.
 - Payment or Stripe checkout.
+- CRM integration.
 - Backend worker scanning.
 - Server-side AI calls.
 - Persistent server storage.

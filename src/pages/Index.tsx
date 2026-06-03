@@ -10,7 +10,7 @@ import type { ReadinessReport, ScanHistoryItem } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useRepoScan } from '@/hooks/useRepoScan';
 import type { ProjectIntake } from '@/lib/intake';
-import { createDefaultProjectIntake } from '@/lib/intake';
+import { createDefaultProjectIntake, hasMeaningfulProjectContext } from '@/lib/intake';
 import { parseGitHubUrl } from '@/lib/github/parseGitHubUrl';
 import { Button } from '@/components/ui/button';
 
@@ -130,12 +130,13 @@ const Index = () => {
     setSubmittedIntakeSkipped(false);
   }, []);
 
-  const startPendingScan = useCallback((skipIntake: boolean) => {
+  const startPendingScan = useCallback(() => {
     if (!pendingSource) return;
-    const intake = skipIntake ? createDefaultProjectIntake(pendingSource.projectName) : pendingIntake;
+    const hasProjectContext = hasMeaningfulProjectContext(pendingIntake, pendingSource.projectName);
+    const intake = hasProjectContext ? pendingIntake : createDefaultProjectIntake(pendingSource.projectName);
 
     setSubmittedIntake(intake);
-    setSubmittedIntakeSkipped(skipIntake);
+    setSubmittedIntakeSkipped(!hasProjectContext);
     setSampleReport(null);
     savedReportKey.current = null;
     lastError.current = null;
@@ -219,8 +220,7 @@ const Index = () => {
                   intake={pendingIntake}
                   onChange={setPendingIntake}
                   onBack={() => setPendingSource(null)}
-                  onContinue={() => startPendingScan(false)}
-                  onSkip={() => startPendingScan(true)}
+                  onContinue={startPendingScan}
                 />
               ) : (
                 <>
@@ -256,14 +256,12 @@ function ProjectContextStep({
   onChange,
   onBack,
   onContinue,
-  onSkip,
 }: {
   sourceLabel: string;
   intake: ProjectIntake;
   onChange: (value: ProjectIntake) => void;
   onBack: () => void;
   onContinue: () => void;
-  onSkip: () => void;
 }) {
   return (
     <div className="space-y-5">
@@ -272,11 +270,13 @@ function ProjectContextStep({
         Repository selected: <span className="text-foreground/90 font-medium break-all">{sourceLabel}</span>
       </div>
       <ProjectIntakeForm value={intake} onChange={onChange} />
+      <div className="rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-muted-foreground">
+        You can continue without project context, but the client report will be more generic.
+      </div>
       <div className="flex flex-col sm:flex-row gap-3 justify-end">
-        <Button type="button" variant="ghost" onClick={onBack}>Back to repository source</Button>
-        <Button type="button" variant="outline" onClick={onSkip}>Skip intake and scan repository only</Button>
+        <Button type="button" variant="ghost" onClick={onBack}>Back</Button>
         <Button type="button" className="bg-gradient-primary border-0 shadow-glow hover:opacity-90" onClick={onContinue}>
-          Continue with project context
+          Continue
         </Button>
       </div>
     </div>

@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import Index from '@/pages/Index';
 
 describe('ShipSeal pre-scan intake flow', () => {
-  it('shows optional Project Intake after ZIP selection and before scanning', async () => {
+  it('shows simplified optional Project Intake actions after ZIP selection', async () => {
     const { container } = render(
       <MemoryRouter>
         <Index />
@@ -21,8 +21,11 @@ describe('ShipSeal pre-scan intake flow', () => {
 
     expect(screen.getByText('Step 2: Add project context')).toBeInTheDocument();
     expect(screen.getByText(/Repository scan tells ShipSeal what the code looks like/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /continue with project context/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /skip intake and scan repository only/i })).toBeInTheDocument();
+    expect(screen.getByText(/Optional, but recommended for client-ready reports/i)).toBeInTheDocument();
+    expect(screen.getByText(/You can continue without project context, but the client report will be more generic/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Back$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Continue$/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /skip intake and scan repository only/i })).not.toBeInTheDocument();
     expect(screen.getByLabelText('Project name')).toHaveValue('real-repo');
     expect(screen.getByLabelText('Project name')).not.toHaveValue('Customer Support RAG Assistant');
   });

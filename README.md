@@ -73,7 +73,7 @@ npm run build
 npm run dev
 ```
 
-For Vercel, use `npm run build` and publish the `dist` directory; the minimal `api/github-archive.ts` serverless endpoint is included for public GitHub archive imports in hosted demos. No environment variables are required.
+For Vercel, use `npm run build` and publish the `dist` directory; the minimal `api/github-archive.ts` serverless endpoint is included for public GitHub archive imports in hosted demos. No environment variables are required for the core scan/export demo.
 
 For Netlify/static-only hosting, the app still works with ZIP upload and sample project flow, but the Vercel API endpoint is not available unless an equivalent same-origin function is implemented. See [Hosted Demo Readiness](docs/HOSTED_DEMO_READINESS.md) for the full deployment and validation checklist.
 
@@ -91,6 +91,14 @@ vercel --prod
 Use `vercel dev` to verify the frontend and `/api/github-archive` endpoint together before publishing. In local Vite mode, public GitHub import can still hit browser CORS restrictions; in Vercel hosted mode, ShipSeal uses `/api/github-archive` first for public GitHub ZIP import.
 
 Private GitHub repositories are not supported yet. ZIP upload remains the stable fallback for demos and client validation. After deployment, run the [Hosted Smoke Test](docs/HOSTED_SMOKE_TEST.md).
+
+### Founder-Reviewed Audit Form
+
+The `Request founder-reviewed audit` CTA opens an in-app form and posts to `POST /api/audit-request`. The form validates contact details, message, and consent before submitting.
+
+Set `CONTACT_WEBHOOK_URL` only if the hosted demo should forward audit requests to a webhook. Configure it in Vercel Dashboard -> Project Settings -> Environment Variables, then redeploy Production. If `CONTACT_WEBHOOK_URL` is not configured, the demo validates the form but returns: `Audit request form is not configured yet.`
+
+There is no mailto fallback, database, CRM integration, or fake success state in the MVP.
 
 ## Sample / Demo Output
 

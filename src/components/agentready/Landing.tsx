@@ -22,8 +22,10 @@ import {
   Workflow,
   Zap,
 } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { SHIPSEAL_VERSION } from '@/lib/version';
+import { FounderAuditRequestDialog } from './FounderAuditRequestForm';
 import { ScoreGauge } from './ScoreGauge';
 import { ReadinessBadge } from './ReadinessBadge';
 
@@ -33,6 +35,8 @@ interface Props {
 }
 
 export function Landing({ onSampleReport, onScrollScan }: Props) {
+  const [auditDialogOpen, setAuditDialogOpen] = useState(false);
+
   return (
     <>
       <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden">
@@ -60,10 +64,8 @@ export function Landing({ onSampleReport, onScrollScan }: Props) {
               <Button size="lg" variant="outline" onClick={onScrollScan} className="border-border/80">
                 Generate Delivery Pack
               </Button>
-              <Button size="lg" variant="outline" asChild className="border-border/80">
-                <a href="mailto:hello@shipseal.dev?subject=Founder-reviewed%20ShipSeal%20audit%20request">
-                  Request founder-reviewed audit
-                </a>
+              <Button size="lg" variant="outline" onClick={() => setAuditDialogOpen(true)} className="border-border/80">
+                Request founder-reviewed audit
               </Button>
             </div>
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
@@ -154,12 +156,10 @@ export function Landing({ onSampleReport, onScrollScan }: Props) {
         <div className="mt-6 rounded-2xl border border-border/60 bg-secondary/25 p-5 flex flex-col md:flex-row md:items-center gap-4">
           <div className="min-w-0 flex-1">
             <div className="font-display font-semibold">Want a founder-reviewed audit?</div>
-            <p className="text-sm text-muted-foreground mt-1">Use the MVP report as the starting point, then request manual expert review and a client-ready improvement pass.</p>
+            <p className="text-sm text-muted-foreground mt-1">Send your contact details and a short project note. We will review whether ShipSeal is a good fit for your AI project handoff.</p>
           </div>
-          <Button asChild className="bg-gradient-primary border-0 shadow-glow hover:opacity-90">
-            <a href="mailto:hello@shipseal.dev?subject=Founder-reviewed%20ShipSeal%20audit%20request">
-              <Mail className="h-4 w-4 mr-1.5" /> Request founder-reviewed audit
-            </a>
+          <Button onClick={() => setAuditDialogOpen(true)} className="bg-gradient-primary border-0 shadow-glow hover:opacity-90">
+            <Mail className="h-4 w-4 mr-1.5" /> Request founder-reviewed audit
           </Button>
         </div>
       </section>
@@ -247,10 +247,8 @@ export function Landing({ onSampleReport, onScrollScan }: Props) {
               <Button size="lg" variant="outline" onClick={onScrollScan}>
                 Generate Delivery Pack
               </Button>
-              <Button size="lg" variant="outline" asChild>
-                <a href="mailto:hello@shipseal.dev?subject=Founder-reviewed%20ShipSeal%20audit%20request">
-                  Request founder-reviewed audit
-                </a>
+              <Button size="lg" variant="outline" onClick={() => setAuditDialogOpen(true)}>
+                Request founder-reviewed audit
               </Button>
             </div>
           </div>
@@ -266,6 +264,8 @@ export function Landing({ onSampleReport, onScrollScan }: Props) {
           <div>ShipSeal MVP v{SHIPSEAL_VERSION}</div>
         </div>
       </footer>
+
+      <FounderAuditRequestDialog open={auditDialogOpen} onOpenChange={setAuditDialogOpen} />
     </>
   );
 }
