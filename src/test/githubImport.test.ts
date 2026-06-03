@@ -60,10 +60,12 @@ describe('public GitHub import helpers', () => {
   it('keeps github-url source metadata when public import succeeds', async () => {
     const file = await demoZipFile();
     const headers = new Headers({ 'content-length': String(file.size) });
-    vi.stubGlobal('fetch', vi.fn(async () => new Response(file, { status: 200, headers })));
+    const fetchMock = vi.fn(async () => new Response(file, { status: 200, headers }));
+    vi.stubGlobal('fetch', fetchMock);
 
     const imported = await importPublicGitHubRepo({ url: 'github.com/Csisz/shipseal', branch: 'main' });
 
+    expect(fetchMock).toHaveBeenCalledWith('/api/github-archive?owner=Csisz&repo=shipseal&ref=main', { method: 'GET', redirect: 'follow' });
     expect(imported.file.name).toBe('Csisz-shipseal-main.zip');
     expect(imported.source).toMatchObject({
       sourceType: 'github-url',
@@ -90,6 +92,48 @@ describe('public GitHub import helpers', () => {
     expect(imported.source.sourceType).toBe('github-url');
   });
 
+  it('uses the same-origin proxy first by default with HEAD ref', async () => {
+    const file = await demoZipFile();
+    const headers = new Headers({ 'content-length': String(file.size) });
+    const fetchMock = vi.fn(async () => new Response(file, { status: 200, headers }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await importPublicGitHubRepo({ url: 'github.com/Csisz/shipseal' });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith('/api/github-archive?owner=Csisz&repo=shipseal&ref=HEAD', { method: 'GET', redirect: 'follow' });
+  });
+
+  it('falls back to direct codeload after a proxy error', async () => {
+    const file = await demoZipFile();
+    const headers = new Headers({ 'content-length': String(file.size) });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'proxy unavailable' }), { status: 502 }))
+      .mockResolvedValueOnce(new Response(file, { status: 200, headers }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const imported = await importPublicGitHubRepo({ url: 'github.com/Csisz/shipseal' });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, '/api/github-archive?owner=Csisz&repo=shipseal&ref=HEAD', { method: 'GET', redirect: 'follow' });
+    expect(fetchMock).toHaveBeenNthCalledWith(2, 'https://codeload.github.com/Csisz/shipseal/zip/HEAD', { method: 'GET', redirect: 'follow' });
+    expect(imported.source.sourceType).toBe('github-url');
+  });
+
+  it('can use direct-browser codeload as an explicit fallback strategy', async () => {
+    const file = await demoZipFile();
+    const headers = new Headers({ 'content-length': String(file.size) });
+    const fetchMock = vi.fn(async () => new Response(file, { status: 200, headers }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await importPublicGitHubRepo({
+      url: 'github.com/Csisz/shipseal',
+      strategy: 'direct-browser-codeload',
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith('https://codeload.github.com/Csisz/shipseal/zip/HEAD', { method: 'GET', redirect: 'follow' });
+  });
+
   it('returns a clear fallback message when public import fails', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => {
       throw new TypeError('network blocked');
@@ -100,7 +144,7 @@ describe('public GitHub import helpers', () => {
       .toMatchObject({
         name: 'GitHubImportError',
         category: 'network-cors-blocked',
-        message: 'Browser restrictions blocked the GitHub ZIP download. Download the repository as ZIP from GitHub and upload it manually, or use the future hosted proxy import.',
+        message: 'Browser restrictions blocked the GitHub ZIP download. Download the repository as ZIP from GitHub and upload it manually.',
         fallbackMessage: 'Download the repository as ZIP from GitHub and upload it manually.',
       } satisfies Partial<GitHubImportError>);
   });

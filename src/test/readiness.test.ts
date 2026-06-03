@@ -406,6 +406,7 @@ describe('Sprint 7 GitHub public repo import', () => {
       .toMatchObject({
         name: 'GitHubImportError',
         category: 'network-cors-blocked',
+        message: 'Browser restrictions blocked the GitHub ZIP download. Download the repository as ZIP from GitHub and upload it manually.',
         fallbackMessage: 'Download the repository as ZIP from GitHub and upload it manually.',
       } satisfies Partial<GitHubImportError>);
   });

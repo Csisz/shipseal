@@ -51,7 +51,7 @@ ShipSeal supports best-effort public GitHub repository import in the browser. Su
 
 Local mode: ZIP upload is recommended. Direct GitHub ZIP import can be blocked by browser CORS or network restrictions because the app is trying to fetch GitHub's archive from the browser. If import is blocked, download the repository as ZIP from GitHub and upload it manually.
 
-Hosted Vercel mode can use the same-origin proxy endpoint `/api/github-archive?owner=Csisz&repo=shipseal&ref=main`. See [GitHub Import Proxy Plan](docs/GITHUB_IMPORT_PROXY_PLAN.md) for the serverless shape and security notes.
+Hosted Vercel mode uses the same-origin proxy endpoint first: `/api/github-archive?owner=Csisz&repo=shipseal&ref=main`. If that proxy fails, the frontend can try direct codeload as a fallback, then shows the ZIP upload fallback if browser restrictions block the download. See [GitHub Import Proxy Plan](docs/GITHUB_IMPORT_PROXY_PLAN.md) for the serverless shape and security notes.
 
 Only public GitHub repositories are supported in the local MVP. Private repositories, tokens, OAuth, and GitHub App installation are not supported yet.
 

@@ -11,7 +11,7 @@ export type GitHubImportErrorCategory =
   | 'zip-too-large'
   | 'unknown-import-error';
 
-export type GitHubImportStrategy = 'direct-browser-codeload' | 'same-origin-proxy';
+export type GitHubImportStrategy = 'proxy-first' | 'direct-browser-codeload' | 'same-origin-proxy';
 
 export interface GitHubImportInput {
   url: string;
@@ -32,7 +32,7 @@ export interface ImportedGitHubRepo {
 }
 
 export const GITHUB_ZIP_FALLBACK_MESSAGE = 'Download the repository as ZIP from GitHub and upload it manually.';
-export const GITHUB_CORS_FALLBACK_MESSAGE = 'Browser restrictions blocked the GitHub ZIP download. Download the repository as ZIP from GitHub and upload it manually, or use the future hosted proxy import.';
+export const GITHUB_CORS_FALLBACK_MESSAGE = 'Browser restrictions blocked the GitHub ZIP download. Download the repository as ZIP from GitHub and upload it manually.';
 
 export class GitHubImportError extends Error {
   category: GitHubImportErrorCategory;
@@ -139,12 +139,16 @@ async function fetchGitHubArchiveBlob(zipUrl: string, input: DirectBrowserCodelo
   return blob;
 }
 
+export async function proxyFirstGitHubArchiveImport(input: DirectBrowserCodeloadInput & { endpoint?: string }): Promise<Blob> {
+  try {
+    return await proxyGitHubArchiveImport(input);
+  } catch {
+    return directBrowserCodeloadImport(input);
+  }
+}
+
 function resolveGitHubImportStrategy(input: GitHubImportInput): GitHubImportStrategy {
-  if (input.strategy) return input.strategy;
-  if (typeof window === 'undefined') return 'direct-browser-codeload';
-  const host = window.location.hostname.toLowerCase();
-  const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::1' || host.endsWith('.local');
-  return isLocal ? 'direct-browser-codeload' : 'same-origin-proxy';
+  return input.strategy || 'proxy-first';
 }
 
 function step(callbacks: GitHubImportCallbacks, index: number, progress: number, complete = false) {
@@ -173,9 +177,12 @@ export async function importPublicGitHubRepo(input: GitHubImportInput, callbacks
 
   step(callbacks, 1, 18);
   const strategy = resolveGitHubImportStrategy(input);
+  const importInput = { owner: parsed.owner, repo: parsed.repo, branch, endpoint: input.proxyEndpoint };
   const blob = strategy === 'same-origin-proxy'
-    ? await proxyGitHubArchiveImport({ owner: parsed.owner, repo: parsed.repo, branch, endpoint: input.proxyEndpoint })
-    : await directBrowserCodeloadImport({ owner: parsed.owner, repo: parsed.repo, branch });
+    ? await proxyGitHubArchiveImport(importInput)
+    : strategy === 'direct-browser-codeload'
+      ? await directBrowserCodeloadImport(importInput)
+      : await proxyFirstGitHubArchiveImport(importInput);
 
   step(callbacks, 1, 28, true);
 

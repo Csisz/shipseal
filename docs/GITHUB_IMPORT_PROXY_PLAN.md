@@ -47,7 +47,8 @@ Expected behavior:
 
 The code is prepared with:
 
-- Direct browser codeload import for best-effort local demos.
+- Proxy-first frontend import: `/api/github-archive` is attempted before direct `codeload.github.com`.
+- Direct browser codeload import remains as a fallback after proxy failure.
 - Same-origin proxy import for hosted Vercel demos.
 - Error categories for invalid URL, unsupported host, network/CORS blocked, repo not found, branch/ref not found, and unknown import errors.
 - A proxy URL builder for `/api/github-archive?owner=&repo=&ref=`.
