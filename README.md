@@ -116,6 +116,12 @@ After a scan, ShipSeal shows a Suggested Readiness Fix Pack with repository file
 
 These files can be previewed, copied, or downloaded. ShipSeal does not write to GitHub in the current MVP. The future `Create Readiness PR` path is documented in [Suggested Readiness Fix Pack](docs/SUGGESTED_READINESS_FIX_PACK.md).
 
+## Create Readiness PR Preview
+
+The scan result page now previews the future `Create Readiness PR` workflow. It shows the planned branch, PR title, summary, changed files, readiness areas, safety note, and manual Git fallback.
+
+This is preview-only in the MVP. ShipSeal does not request GitHub tokens, does not write to repositories, and does not push to `main`. A future integration should create a separate branch such as `shipseal/readiness-pack` and open a pull request for human review. See [Create Readiness PR Plan](docs/CREATE_READINESS_PR_PLAN.md).
+
 ## MVP Validation Offer
 
 The first offer to validate is simple: ShipSeal turns an AI prototype or client automation repository into a client-ready Delivery Pack before handoff.
