@@ -405,7 +405,8 @@ describe('Sprint 7 GitHub public repo import', () => {
       .rejects
       .toMatchObject({
         name: 'GitHubImportError',
-        fallbackMessage: 'If GitHub import fails, download the repository as ZIP and upload it manually.',
+        category: 'network-cors-blocked',
+        fallbackMessage: 'Download the repository as ZIP from GitHub and upload it manually.',
       } satisfies Partial<GitHubImportError>);
   });
 

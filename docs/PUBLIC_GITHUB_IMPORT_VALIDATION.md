@@ -42,7 +42,13 @@ github.com/Csisz/shipseal
 If GitHub import is blocked or unavailable, the UI should explain:
 
 ```text
-If GitHub import fails, download the repository as ZIP and upload it manually.
+Browser restrictions blocked the GitHub ZIP download. Download the repository as ZIP from GitHub and upload it manually, or use the future hosted proxy import.
+```
+
+The GitHub tab should also show:
+
+```text
+Local MVP note: if GitHub import is blocked, use Download ZIP on GitHub and upload it here.
 ```
 
 This fallback is acceptable for the MVP. Browser-based public GitHub import can fail because of CORS, network restrictions, repository availability, branch naming, redirects, or ZIP size limits.
@@ -62,5 +68,5 @@ This fallback is acceptable for the MVP. Browser-based public GitHub import can 
 - GitHub App installation.
 - OAuth.
 - User-pasted tokens.
-- Backend proxying.
+- Backend proxying in the current MVP. A future hosted proxy plan is documented in [GitHub Import Proxy Plan](GITHUB_IMPORT_PROXY_PLAN.md).
 - Server-side GitHub workers.

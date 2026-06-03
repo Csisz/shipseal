@@ -4,6 +4,7 @@ export type {
 
 export type {
   GitHubImportCallbacks,
+  GitHubImportErrorCategory,
   GitHubImportInput,
   ImportedGitHubRepo,
 } from './githubImport';

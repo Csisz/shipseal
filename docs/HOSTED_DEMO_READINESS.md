@@ -84,7 +84,8 @@ Do not add OpenAI, Anthropic, GitHub, Stripe, or private API keys to the client-
   - `github.com/Csisz/shipseal`
 - Optional branch input is supported when the branch name is known.
 - If no branch is provided, ShipSeal requests the public GitHub archive for `HEAD`; GitHub resolves the repository default branch.
-- Public GitHub import is best-effort in the browser. ZIP upload is the recommended fallback for demos.
+- Public GitHub import is best-effort in the browser. ZIP upload is the recommended fallback for local demos.
+- A hosted public GitHub import should use a same-origin serverless proxy such as `/api/github-archive?owner=Csisz&repo=shipseal&ref=main`. See [GitHub Import Proxy Plan](GITHUB_IMPORT_PROXY_PLAN.md).
 
 ## Final Hosted Demo Checklist
 

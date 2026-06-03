@@ -1,6 +1,6 @@
-# AgentReady Architecture
+# ShipSeal Architecture
 
-AgentReady is currently a local-only React/Vite application. Repository ZIP files are scanned in the browser, readiness reports are generated locally, and exports are produced with browser Blob downloads.
+ShipSeal is currently a local-first React/Vite application. Repository ZIP files are scanned in the browser, readiness reports are generated locally, and exports are produced with browser Blob downloads.
 
 ## Current Local Architecture
 
@@ -15,7 +15,7 @@ AgentReady is currently a local-only React/Vite application. Repository ZIP file
 - Exports: `src/lib/exports.ts`.
 - Local history: metadata-only `localStorage` via `src/lib/scanHistory.ts`.
 
-Uploaded code is never executed. AgentReady reads filenames, sizes, and selected small text/config files only.
+Uploaded code is never executed. ShipSeal reads filenames, sizes, and selected small text/config files only.
 
 ## Public GitHub Import Flow
 
@@ -28,7 +28,9 @@ Sprint 7 adds a client-side public GitHub import path:
 5. `LocalScanEngine` scans the ZIP with `mode: 'github-public'` and preserves source metadata as `sourceType: github-url`.
 6. The final `ReadinessReport` includes lightweight source metadata.
 
-If fetch fails due to CORS, network behavior, private repository access, missing repository, branch mismatch, or ZIP size limits, AgentReady shows the manual ZIP fallback message. No GitHub token or credential is requested.
+If fetch fails due to CORS, network behavior, private repository access, missing repository, branch mismatch, or ZIP size limits, ShipSeal shows a categorized fallback message. ZIP upload remains the reliable local MVP path. No GitHub token or credential is requested.
+
+Hosted public GitHub import should later move to a same-origin endpoint such as `/api/github-archive?owner=Csisz&repo=shipseal&ref=main`; see [GitHub Import Proxy Plan](GITHUB_IMPORT_PROXY_PLAN.md).
 
 ## Source Metadata
 

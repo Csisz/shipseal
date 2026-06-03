@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseGitHubUrl } from '@/lib/github/parseGitHubUrl';
-import { buildGitHubZipUrl, GitHubImportError, importPublicGitHubRepo } from '@/lib/github/githubImport';
+import {
+  buildGitHubProxyImportUrl,
+  buildGitHubZipUrl,
+  GitHubImportError,
+  importPublicGitHubRepo,
+} from '@/lib/github/githubImport';
 import { LocalScanEngine } from '@/lib/scanEngine';
 import type { ScanSourceMetadata } from '@/lib/types';
 import JSZip from 'jszip';
@@ -43,6 +48,11 @@ describe('public GitHub import helpers', () => {
     expect(buildGitHubZipUrl('Csisz', 'shipseal', 'main')).toBe('https://codeload.github.com/Csisz/shipseal/zip/refs/heads/main');
   });
 
+  it('builds a future same-origin proxy import URL', () => {
+    expect(buildGitHubProxyImportUrl('Csisz', 'shipseal', 'main')).toBe('/api/github-archive?owner=Csisz&repo=shipseal&ref=main');
+    expect(buildGitHubProxyImportUrl('Csisz', 'shipseal')).toBe('/api/github-archive?owner=Csisz&repo=shipseal');
+  });
+
   it('keeps github-url source metadata when public import succeeds', async () => {
     const file = await demoZipFile();
     const headers = new Headers({ 'content-length': String(file.size) });
@@ -69,8 +79,32 @@ describe('public GitHub import helpers', () => {
       .rejects
       .toMatchObject({
         name: 'GitHubImportError',
-        fallbackMessage: 'If GitHub import fails, download the repository as ZIP and upload it manually.',
+        category: 'network-cors-blocked',
+        message: 'Browser restrictions blocked the GitHub ZIP download. Download the repository as ZIP from GitHub and upload it manually, or use the future hosted proxy import.',
+        fallbackMessage: 'Download the repository as ZIP from GitHub and upload it manually.',
       } satisfies Partial<GitHubImportError>);
+  });
+
+  it('categorizes repo and branch lookup failures separately', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('', { status: 404 })));
+
+    await expect(importPublicGitHubRepo({ url: 'https://github.com/Csisz/shipseal' }))
+      .rejects
+      .toMatchObject({ category: 'repo-not-found' } satisfies Partial<GitHubImportError>);
+
+    await expect(importPublicGitHubRepo({ url: 'https://github.com/Csisz/shipseal', branch: 'missing-ref' }))
+      .rejects
+      .toMatchObject({ category: 'branch-ref-not-found' } satisfies Partial<GitHubImportError>);
+  });
+
+  it('categorizes unsupported hosts separately from malformed URLs', async () => {
+    await expect(importPublicGitHubRepo({ url: 'https://gitlab.com/Csisz/shipseal' }))
+      .rejects
+      .toMatchObject({ category: 'unsupported-host' } satisfies Partial<GitHubImportError>);
+
+    await expect(importPublicGitHubRepo({ url: 'not a repo' }))
+      .rejects
+      .toMatchObject({ category: 'invalid-url' } satisfies Partial<GitHubImportError>);
   });
 
   it('ZIP upload flow still works with zip-upload source metadata', async () => {

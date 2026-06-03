@@ -11,6 +11,25 @@ import { useRepoScan } from '@/hooks/useRepoScan';
 
 const ResultDashboard = lazy(() => import('@/components/agentready/ResultDashboard').then(module => ({ default: module.ResultDashboard })));
 
+function importErrorTitle(category?: string | null) {
+  switch (category) {
+    case 'invalid-url':
+      return 'Invalid GitHub URL';
+    case 'unsupported-host':
+      return 'Unsupported repository host';
+    case 'network-cors-blocked':
+      return 'GitHub ZIP download blocked';
+    case 'repo-not-found':
+      return 'Repository not found';
+    case 'branch-ref-not-found':
+      return 'Branch or ref not found';
+    case 'zip-too-large':
+      return 'Repository ZIP too large';
+    default:
+      return 'Import blocked';
+  }
+}
+
 const Index = () => {
   const scan = useRepoScan();
   const [sampleReport, setSampleReport] = useState<ReadinessReport | null>(null);
@@ -39,11 +58,11 @@ const Index = () => {
     if (!scan.error || lastError.current === scan.error) return;
     lastError.current = scan.error;
     toast({
-      title: scan.status === 'cancelled' ? 'Scan cancelled' : 'Scan blocked',
+      title: scan.status === 'cancelled' ? 'Scan cancelled' : importErrorTitle(scan.errorCategory),
       description: scan.error,
       variant: scan.status === 'cancelled' ? 'default' : 'destructive',
     });
-  }, [scan.error, scan.status]);
+  }, [scan.error, scan.errorCategory, scan.status]);
 
   const scrollScan = useCallback(() => {
     scanSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });

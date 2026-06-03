@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { GITHUB_PUBLIC_SCAN_STEPS, localScanEngine, ScanCancelledError, SCAN_ENGINE_STEPS } from '@/lib/scanEngine';
 import { GitHubImportError, importPublicGitHubRepo } from '@/lib/github/githubImport';
+import type { GitHubImportErrorCategory } from '@/lib/github/types';
 import type { ReadinessReport } from '@/lib/types';
 
 export type RepoScanStatus = 'idle' | 'scanning' | 'completed' | 'failed' | 'cancelled';
@@ -13,6 +14,7 @@ export interface RepoScanState {
   progress: number;
   warnings: string[];
   error: string | null;
+  errorCategory: GitHubImportErrorCategory | null;
   report: ReadinessReport | null;
   steps: readonly string[];
 }
@@ -25,6 +27,7 @@ const initialState: RepoScanState = {
   progress: 0,
   warnings: [],
   error: null,
+  errorCategory: null,
   report: null,
   steps: SCAN_ENGINE_STEPS,
 };
@@ -48,10 +51,11 @@ export function useRepoScan() {
     setState(current => ({
       ...current,
       status: 'cancelled',
-      currentStep: null,
-      error: 'Scan cancelled',
-      progress: 0,
-      report: null,
+        currentStep: null,
+        error: 'Scan cancelled',
+        errorCategory: null,
+        progress: 0,
+        report: null,
     }));
   }, []);
 
@@ -107,6 +111,7 @@ export function useRepoScan() {
         status: cancelled ? 'cancelled' : 'failed',
         currentStep: null,
         error: cancelled ? 'Scan cancelled' : error instanceof Error ? error.message : String(error),
+        errorCategory: null,
         report: null,
       }));
       abortRef.current = null;
@@ -195,6 +200,7 @@ export function useRepoScan() {
         status: cancelled ? 'cancelled' : 'failed',
         currentStep: null,
         error: message,
+        errorCategory: error instanceof GitHubImportError ? error.category : null,
         report: null,
       }));
       abortRef.current = null;
