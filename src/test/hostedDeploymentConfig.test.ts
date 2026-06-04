@@ -6,7 +6,7 @@ import { SHIPSEAL_VERSION, appVersion } from '@/lib/version';
 const root = resolve(__dirname, '..', '..');
 
 describe('hosted deployment configuration', () => {
-  it('has Vercel config for Vite output, API filesystem handling, and SPA fallback', () => {
+  it('has Vercel config for Vite dev, API routes, and SPA fallback', () => {
     const vercelJsonPath = resolve(root, 'vercel.json');
 
     expect(existsSync(vercelJsonPath)).toBe(true);
@@ -16,10 +16,23 @@ describe('hosted deployment configuration', () => {
     expect(config.framework).toBe('vite');
     expect(config.buildCommand).toBe('npm run build');
     expect(config.outputDirectory).toBe('dist');
-    expect(config.routes).toEqual([
-      { handle: 'filesystem' },
-      { src: '/.*', dest: '/index.html' },
+    expect(config.devCommand).toContain('vite');
+    expect(config.devCommand).toContain('--host 0.0.0.0');
+    expect(config.devCommand).toContain('--port $PORT');
+    expect(config.routes).toBeUndefined();
+    expect(config.rewrites).toEqual([
+      { source: '/api/(.*)', destination: '/api/$1' },
+      { source: '/(.*)', destination: '/index.html' },
     ]);
+  });
+
+  it('keeps Vite package scripts explicit for local and hosted dev', () => {
+    const packageJson = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8'));
+
+    expect(packageJson.scripts.dev).toBe('vite');
+    expect(packageJson.scripts.build).toBe('vite build');
+    expect(packageJson.scripts.preview).toBe('vite preview');
+    expect(packageJson.scripts.test).toBe('vitest run');
   });
 
   it('uses the ShipSeal RC version constant consistently', () => {

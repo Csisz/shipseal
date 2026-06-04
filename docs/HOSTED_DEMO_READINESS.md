@@ -4,6 +4,8 @@ This checklist is for preparing a public, hosted ShipSeal MVP demo on Vercel, Ne
 
 ## Local Run
 
+Frontend-only Vite dev:
+
 ```bash
 npm install
 npm run test
@@ -12,6 +14,16 @@ npm run dev
 ```
 
 Open the local Vite URL shown in the terminal. The default local URL is usually `http://localhost:8080`.
+
+Vercel dev with API routes:
+
+```bash
+vercel dev
+```
+
+Use `vercel dev` when testing `/api/github-archive`, `/api/create-readiness-pr`, and `/api/audit-request` together with the frontend.
+
+If `vercel dev` opens a white page and the console shows `GET /src/main.tsx 404`, `GET /@vite/client 404`, or `GET /@react-refresh 404`, Vercel is serving the root `index.html` as a static file instead of proxying the Vite dev server. Check that `vercel.json` uses `framework: "vite"` and `devCommand: "vite --host 0.0.0.0 --port $PORT"`.
 
 ## Environment Variables
 
@@ -33,7 +45,7 @@ Do not add OpenAI, Anthropic, GitHub, Stripe, or private API keys to the client-
 2. Use the default Vite settings:
    - Build command: `npm run build`
    - Output directory: `dist`
-3. Keep `vercel.json`; it lets Vercel serve API/functions and static assets before the SPA fallback.
+3. Keep `vercel.json`; it sets the Vite framework preset, `devCommand`, API route handling, and SPA fallback.
 4. Leave environment variables empty for scan/export-only demos, or set `CONTACT_WEBHOOK_URL` if the audit request form should forward requests.
 5. Deploy. Vercel should also expose the serverless endpoint at `/api/github-archive`.
 6. After deployment, run the manual demo checks below and [Hosted Smoke Test](HOSTED_SMOKE_TEST.md).

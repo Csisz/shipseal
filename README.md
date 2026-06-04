@@ -31,6 +31,10 @@ npm run dev
 
 Vite defaults to port `8080`. If that port is busy, Vite may choose another port.
 
+Use `npm run dev` for frontend-only local development. Use `vercel dev` when you also need the Vercel API routes such as `/api/github-archive`, `/api/create-readiness-pr`, and `/api/audit-request`.
+
+If `vercel dev` shows a white page with console errors such as `GET /src/main.tsx 404`, `GET /@vite/client 404`, or `GET /@react-refresh 404`, the Vercel/Vite dev configuration is broken. `vercel.json` must use the Vite framework preset and `devCommand: "vite --host 0.0.0.0 --port $PORT"` so Vercel dev can pass its proxy port to the Vite dev server instead of serving the root `index.html` as a static file.
+
 ## How To Run The ShipSeal MVP Demo
 
 1. Run `npm install` and `npm run dev`.
@@ -73,7 +77,7 @@ npm run build
 npm run dev
 ```
 
-For Vercel, use `npm run build` and publish the `dist` directory; the minimal `api/github-archive.ts` serverless endpoint is included for public GitHub archive imports in hosted demos. No environment variables are required for the core scan/export demo.
+For Vercel, use `npm run build` and publish the `dist` directory; the minimal serverless endpoints under `api/` are included for public GitHub archive imports, Create Readiness PR, and optional audit requests in hosted demos. No environment variables are required for the core scan/export demo.
 
 For Netlify/static-only hosting, the app still works with ZIP upload and sample project flow, but the Vercel API endpoint is not available unless an equivalent same-origin function is implemented. See [Hosted Demo Readiness](docs/HOSTED_DEMO_READINESS.md) for the full deployment and validation checklist.
 
@@ -89,6 +93,13 @@ vercel --prod
 ```
 
 Use `vercel dev` to verify the frontend and `/api/github-archive` endpoint together before publishing. In local Vite mode, public GitHub import can still hit browser CORS restrictions; in Vercel hosted mode, ShipSeal uses `/api/github-archive` first for public GitHub ZIP import.
+
+Expected dev modes:
+
+- `npm run dev`: Vite frontend only.
+- `vercel dev`: Vite frontend plus Vercel API routes.
+
+If `vercel dev` loads a blank page and the browser console shows missing Vite files like `/src/main.tsx`, `/@vite/client`, or `/@react-refresh`, verify that `vercel.json` still contains `framework: "vite"` and `devCommand: "vite --host 0.0.0.0 --port $PORT"`.
 
 Private GitHub repositories are not supported yet. ZIP upload remains the stable fallback for demos and client validation. After deployment, run the [Hosted Smoke Test](docs/HOSTED_SMOKE_TEST.md).
 
