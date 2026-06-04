@@ -1,10 +1,13 @@
 import { useMemo, useState } from 'react';
 import { Copy, Download, GitBranch, GitPullRequestDraft, Lightbulb, ShieldCheck } from 'lucide-react';
-import JSZip from 'jszip';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { ReadinessReport } from '@/lib/types';
-import { buildSuggestedReadinessFixPack } from '@/lib/readinessFixPack';
+import {
+  buildReadinessFixPackZipBlobFromFiles,
+  buildReadinessFixPackZipFilename,
+  buildSuggestedReadinessFixPack,
+} from '@/lib/readinessFixPack';
 import { buildReadinessPrPlan } from '@/lib/readinessPr';
 
 interface Props {
@@ -45,9 +48,24 @@ export function SuggestedReadinessFixPack({ report }: Props) {
             These files are already included in your Delivery Pack. Add them to your repository to improve future scans.
           </p>
         </div>
-        <Button type="button" variant="outline" size="sm" onClick={() => downloadSuggestedFiles(report.repoName, files)}>
-          <Download className="h-3.5 w-3.5 mr-1.5" /> Download suggested files
+        <Button type="button" variant="outline" size="sm" onClick={() => downloadReadinessFixPack(report.repoName, files)}>
+          <Download className="h-3.5 w-3.5 mr-1.5" /> Download Readiness Fix Pack
         </Button>
+      </div>
+
+      <div className="mb-5 grid md:grid-cols-2 gap-3 text-sm">
+        <div className="rounded-lg border border-border/60 bg-secondary/25 p-4">
+          <div className="font-display font-semibold">Delivery Pack</div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Client handoff package with reports, AI Act readiness, testing pack and agent instructions.
+          </p>
+        </div>
+        <div className="rounded-lg border border-primary/30 bg-primary/10 p-4">
+          <div className="font-display font-semibold">Readiness Fix Pack</div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Repository files you can add back to your project to improve future scans and make the repo more agent-ready.
+          </p>
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-[1fr_1.15fr] gap-4">
@@ -171,8 +189,8 @@ export function SuggestedReadinessFixPack({ report }: Props) {
               <Button type="button" variant="outline" onClick={copyManualSteps}>
                 <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy manual Git steps
               </Button>
-              <Button type="button" variant="outline" onClick={() => downloadSuggestedFiles(report.repoName, files)}>
-                <Download className="h-3.5 w-3.5 mr-1.5" /> Download suggested files
+              <Button type="button" variant="outline" onClick={() => downloadReadinessFixPack(report.repoName, files)}>
+                <Download className="h-3.5 w-3.5 mr-1.5" /> Download Readiness Fix Pack
               </Button>
             </div>
           </div>
@@ -191,16 +209,12 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-async function downloadSuggestedFiles(repoName: string, files: ReturnType<typeof buildSuggestedReadinessFixPack>) {
-  const zip = new JSZip();
-  for (const file of files) {
-    zip.file(file.path, file.content);
-  }
-  const blob = await zip.generateAsync({ type: 'blob' });
+async function downloadReadinessFixPack(repoName: string, files: ReturnType<typeof buildSuggestedReadinessFixPack>) {
+  const blob = await buildReadinessFixPackZipBlobFromFiles(files);
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `shipseal-readiness-fix-pack-${repoName}.zip`;
+  link.download = buildReadinessFixPackZipFilename(repoName);
   link.click();
   window.setTimeout(() => URL.revokeObjectURL(url), 30000);
 }

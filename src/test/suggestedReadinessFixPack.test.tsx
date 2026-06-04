@@ -15,6 +15,10 @@ describe('SuggestedReadinessFixPack', () => {
     expect(screen.getAllByText('.github/workflows/ci.yml').length).toBeGreaterThan(0);
     expect(screen.getAllByText(/AI agent instruction readiness/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/These files are already included in your Delivery Pack/i)).toBeInTheDocument();
+    expect(screen.getByText('Delivery Pack')).toBeInTheDocument();
+    expect(screen.getByText(/Client handoff package with reports, AI Act readiness, testing pack and agent instructions/i)).toBeInTheDocument();
+    expect(screen.getByText('Readiness Fix Pack')).toBeInTheDocument();
+    expect(screen.getByText(/Repository files you can add back to your project to improve future scans/i)).toBeInTheDocument();
     expect(screen.getByText('Create Readiness PR')).toBeInTheDocument();
     expect(screen.getByText('Coming soon')).toBeInTheDocument();
     expect(screen.getByText(/Preview the repository changes ShipSeal would propose in a safe pull request/i)).toBeInTheDocument();
@@ -22,8 +26,8 @@ describe('SuggestedReadinessFixPack', () => {
     expect(screen.getByText('Add ShipSeal readiness and agent governance pack')).toBeInTheDocument();
     expect(screen.getByText(/ShipSeal will not push directly to main/i)).toBeInTheDocument();
     expect(screen.getByText(/Then open a Pull Request on GitHub/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Create Readiness PR .* coming soon/i })).toBeDisabled();
-    expect(screen.getAllByRole('button', { name: /Copy manual Git steps/i }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole('button', { name: /Download suggested files/i }).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Create Readiness PR .* coming soon/i).closest('button')).toBeDisabled();
+    expect(screen.getAllByText(/Copy manual Git steps/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Download Readiness Fix Pack/i).length).toBeGreaterThan(0);
   });
 });

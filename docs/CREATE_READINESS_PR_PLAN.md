@@ -2,7 +2,7 @@
 
 Create Readiness PR is the future ShipSeal workflow for proposing repository-ready files through a reviewed pull request.
 
-The current MVP does not write to GitHub, request OAuth, ask for tokens, create branches, or open real pull requests. It only previews the planned PR and gives a manual Git fallback.
+The current MVP does not write to GitHub, request OAuth, ask for tokens, create branches, or open real pull requests. It previews the planned PR and lets users download the separate ShipSeal Readiness Fix Pack ZIP.
 
 ## Goal
 
@@ -36,6 +36,8 @@ A pull request is safer because:
 - `docs/RELEASE_CHECKLIST.md`
 - `docs/OWNERSHIP.md`
 - `.github/workflows/ci.yml`
+
+The downloadable Readiness Fix Pack may also include `docs/AGENT_CHANGE_POLICY.md`, `docs/HANDOFF_CHECKLIST.md`, and `docs/AI_ACT_READINESS_NOTES.md`.
 
 ## Readiness Areas
 
@@ -75,15 +77,15 @@ The integration should not request broad organization access by default.
 
 ## Manual Fallback In The MVP
 
-Users can download the suggested files and apply them manually:
+Users can download `shipseal-readiness-fix-pack-[repo].zip` and apply it manually:
 
 ```bash
 git checkout -b shipseal/readiness-pack
 
-# copy the suggested ShipSeal files into the repository
+# unzip shipseal-readiness-fix-pack-[repo].zip into the repository root
 
 git add AGENTS.md CLAUDE.md CONTRIBUTING.md SECURITY.md docs/ .github/workflows/ci.yml
-git commit -m "Add ShipSeal readiness pack"
+git commit -m "Add ShipSeal readiness fix pack"
 git push origin shipseal/readiness-pack
 ```
 

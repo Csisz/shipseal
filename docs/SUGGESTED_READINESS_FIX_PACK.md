@@ -2,7 +2,7 @@
 
 The Suggested Readiness Fix Pack shows repository files that can improve ShipSeal readiness scoring, agent-readiness, governance, testing, security, and client handoff quality.
 
-The feature is intentionally preview-first. It does not write to GitHub, does not request tokens, and does not create branches or pull requests in the current MVP.
+The feature is intentionally preview-first. It does not write to GitHub, does not request tokens, and does not create branches or pull requests in the current MVP. Users can download a separate `shipseal-readiness-fix-pack-[repo].zip` and copy those files into the repository root.
 
 ## Why Not Write Directly To Main
 
@@ -24,6 +24,7 @@ The current MVP prepares this by:
 - generating suggested file mappings,
 - showing a preview,
 - allowing copy/download,
+- exporting a separate Readiness Fix Pack ZIP,
 - explaining which readiness category each file improves.
 
 ## Suggested Files
@@ -36,6 +37,26 @@ The current MVP prepares this by:
 - `docs/RELEASE_CHECKLIST.md` - build, test and quality gates.
 - `docs/OWNERSHIP.md` - ownership and review routing.
 - `.github/workflows/ci.yml` - automated test/build verification.
+
+Optional MVP files may include:
+
+- `docs/AGENT_CHANGE_POLICY.md` - AI agent change boundaries.
+- `docs/HANDOFF_CHECKLIST.md` - client handoff review checklist.
+- `docs/AI_ACT_READINESS_NOTES.md` - preliminary technical AI Act readiness notes, not legal advice.
+
+## Manual Git Fallback
+
+```bash
+git checkout -b shipseal/readiness-pack
+
+# unzip shipseal-readiness-fix-pack-[repo].zip into the repository root
+
+git add AGENTS.md CLAUDE.md CONTRIBUTING.md SECURITY.md docs/ .github/workflows/ci.yml
+git commit -m "Add ShipSeal readiness fix pack"
+git push origin shipseal/readiness-pack
+```
+
+Then open a Pull Request on GitHub.
 
 ## Future Create Readiness PR
 

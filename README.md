@@ -114,7 +114,14 @@ The sample is intentionally not perfect. The generated pack should surface missi
 
 After a scan, ShipSeal shows a Suggested Readiness Fix Pack with repository files that can improve future readiness scans: `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `SECURITY.md`, ownership docs, critical file policy, release checklist, and CI workflow.
 
-These files can be previewed, copied, or downloaded. ShipSeal does not write to GitHub in the current MVP. The future `Create Readiness PR` path is documented in [Suggested Readiness Fix Pack](docs/SUGGESTED_READINESS_FIX_PACK.md).
+These files can be previewed, copied, or downloaded as a separate `shipseal-readiness-fix-pack-[repo].zip`. ShipSeal does not write to GitHub in the current MVP. The future `Create Readiness PR` path is documented in [Suggested Readiness Fix Pack](docs/SUGGESTED_READINESS_FIX_PACK.md).
+
+Delivery Pack and Readiness Fix Pack are intentionally separate:
+
+- Delivery Pack: client handoff package with reports, AI Act readiness, testing pack and agent instructions.
+- Readiness Fix Pack: repository files you can add back to your project to improve future scans and make the repo more agent-ready.
+
+See [Readiness Fix Pack](docs/READINESS_FIX_PACK.md) for manual branch and pull request steps.
 
 ## Create Readiness PR Preview
 

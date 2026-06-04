@@ -14,7 +14,8 @@ describe('Readiness PR plan', () => {
     expect(paths).toContain('CLAUDE.md');
     expect(paths).toContain('.github/workflows/ci.yml');
     expect(plan.manualGitSteps).toContain('git checkout -b shipseal/readiness-pack');
-    expect(plan.manualGitSteps).toContain('git commit -m "Add ShipSeal readiness pack"');
+    expect(plan.manualGitSteps).toContain('shipseal-readiness-fix-pack-[repo].zip');
+    expect(plan.manualGitSteps).toContain('git commit -m "Add ShipSeal readiness fix pack"');
     expect(plan.categories).toContain('AI agent instruction readiness');
     expect(plan.categories).toContain('Client handoff quality');
     expect(serialized).not.toContain('api.github.com');

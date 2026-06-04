@@ -1,7 +1,43 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { ResultDashboard } from '@/components/agentready/ResultDashboard';
 import { buildSampleReport } from '@/lib/readiness';
+
+vi.mock('@/components/agentready/ScoreGauge', () => ({
+  ScoreGauge: ({ score }: { score: number }) => <div>Score gauge {score}</div>,
+}));
+
+vi.mock('@/components/agentready/CategoryBreakdown', () => ({
+  CategoryBreakdown: () => <div>Category breakdown mock</div>,
+}));
+
+vi.mock('@/components/agentready/AgentPackTabs', () => ({
+  AgentPackTabs: () => <div>Agent pack tabs mock</div>,
+}));
+
+vi.mock('@/components/agentready/DeliveryPackPreview', () => ({
+  DeliveryPackPreview: ({ intakeSkipped }: { intakeSkipped?: boolean }) => (
+    <div>{intakeSkipped ? 'Client report quality is limited because project intake was skipped.' : 'Delivery Pack preview mock'}</div>
+  ),
+}));
+
+vi.mock('@/components/agentready/SuggestedReadinessFixPack', () => ({
+  SuggestedReadinessFixPack: () => <div>Suggested Readiness Fix Pack mock</div>,
+}));
+
+vi.mock('@/components/agentready/ProjectIntakeForm', () => ({
+  ProjectIntakeForm: ({ value, onChange }: { value: { clientName?: string }; onChange: (value: unknown) => void }) => (
+    <label>
+      Client name
+      <input
+        aria-label="Client name"
+        value={value.clientName || ''}
+        onChange={event => onChange({ ...value, clientName: event.target.value })}
+      />
+    </label>
+  ),
+}));
+
+import { ResultDashboard } from '@/components/agentready/ResultDashboard';
 
 describe('ResultDashboard summary copy', () => {
   it('uses compact Delivery Pack summary text that does not truncate the old wording', () => {

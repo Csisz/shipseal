@@ -22,10 +22,10 @@ const categories = [
 const manualGitSteps = [
   'git checkout -b shipseal/readiness-pack',
   '',
-  '# copy the suggested ShipSeal files into the repository',
+  '# unzip shipseal-readiness-fix-pack-[repo].zip into the repository root',
   '',
   'git add AGENTS.md CLAUDE.md CONTRIBUTING.md SECURITY.md docs/ .github/workflows/ci.yml',
-  'git commit -m "Add ShipSeal readiness pack"',
+  'git commit -m "Add ShipSeal readiness fix pack"',
   'git push origin shipseal/readiness-pack',
 ].join('\n');
 
