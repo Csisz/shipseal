@@ -2,7 +2,7 @@
 
 The Suggested Readiness Fix Pack shows repository files that can improve ShipSeal readiness scoring, agent-readiness, governance, testing, security, and client handoff quality.
 
-The feature is intentionally preview-first. It does not write to GitHub, does not request tokens, and does not create branches or pull requests in the current MVP. Users can download a separate `shipseal-readiness-fix-pack-[repo].zip` and copy those files into the repository root.
+The feature is intentionally review-first. Users can download a separate `shipseal-readiness-fix-pack-[repo].zip` and copy those files into the repository root, or use `Create Readiness PR` after reviewing the files, providing a GitHub token, and confirming the operation.
 
 ## Why Not Write Directly To Main
 
@@ -15,17 +15,18 @@ Readiness files affect how humans and AI agents operate in a repository. Writing
 - release checklist language,
 - ownership and review policy.
 
-## Why Future Pull Requests Are Safer
+## Why Pull Requests Are Safer
 
-A future `Create Readiness PR` feature should create a separate branch and open a pull request for human review. That keeps changes visible, reviewable, reversible, and compatible with normal team workflows.
+`Create Readiness PR` creates a separate branch and opens a pull request for human review. That keeps changes visible, reviewable, reversible, and compatible with normal team workflows.
 
-The current MVP prepares this by:
+The current MVP supports this by:
 
 - generating suggested file mappings,
 - showing a preview,
 - allowing copy/download,
 - exporting a separate Readiness Fix Pack ZIP,
-- explaining which readiness category each file improves.
+- explaining which readiness category each file improves,
+- requiring explicit confirmation before creating a GitHub pull request.
 
 ## Suggested Files
 
@@ -58,13 +59,13 @@ git push origin shipseal/readiness-pack
 
 Then open a Pull Request on GitHub.
 
-## Future Create Readiness PR
+## Create Readiness PR MVP
 
-Future version:
+Current MVP flow:
 
 1. Generate suggested readiness files.
 2. Create a separate branch.
-3. Commit the suggested files.
+3. Upload the suggested files.
 4. Open a pull request.
 5. Let the repository owner review, edit, and merge.
 
@@ -73,5 +74,5 @@ Not included now:
 - GitHub OAuth.
 - GitHub App.
 - Private repository write access.
-- Automatic PR creation.
+- Token storage.
 - Main branch writes.

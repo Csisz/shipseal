@@ -7,7 +7,7 @@ It is different from the ShipSeal Delivery Pack.
 - Delivery Pack: client handoff package with reports, AI Act readiness, testing pack and agent instructions.
 - Readiness Fix Pack: repository files you can add back to your project to improve future scans and make the repo more agent-ready.
 
-The current MVP does not write to GitHub, request tokens, open pull requests, or push to any branch. Users download the ZIP and apply it manually.
+The current MVP can either export the ZIP for manual application or create a reviewed GitHub pull request when the user explicitly provides a token and confirms the operation. ShipSeal never pushes directly to `main`.
 
 ## Files Included
 
@@ -70,18 +70,17 @@ Then open a Pull Request on GitHub.
 
 A separate branch keeps generated files reviewable and reversible. It lets CI run and gives humans a clean place to approve or reject each repository change.
 
-ShipSeal should not push directly to `main`. A future GitHub integration should create a separate branch and open a pull request for human review.
+ShipSeal should not push directly to `main`. The Create Readiness PR MVP creates a separate branch and opens a pull request for human review.
 
-## How This Prepares Create Readiness PR
+## Create Readiness PR
 
-The Readiness Fix Pack defines the file manifest, generated content, metadata and manual workflow that a future `Create Readiness PR` integration can reuse.
+The Readiness Fix Pack defines the file manifest, generated content, metadata and manual workflow that `Create Readiness PR` reuses.
 
-Future implementation should add:
+The MVP flow:
 
-1. GitHub OAuth or GitHub App.
-2. Scoped repository write permission.
-3. Branch creation.
-4. Upload of reviewed generated files.
-5. Pull request creation.
-6. User review.
-7. Merge only by explicit human decision.
+1. Shows the planned files and workflow warning.
+2. Requires a GitHub token only for the submit request.
+3. Creates `shipseal/readiness-pack` or a timestamped fallback branch.
+4. Uploads the reviewed generated files.
+5. Opens a pull request.
+6. Leaves merge decisions to humans.

@@ -114,7 +114,7 @@ The sample is intentionally not perfect. The generated pack should surface missi
 
 After a scan, ShipSeal shows a Suggested Readiness Fix Pack with repository files that can improve future readiness scans: `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `SECURITY.md`, ownership docs, critical file policy, release checklist, and CI workflow.
 
-These files can be previewed, copied, or downloaded as a separate `shipseal-readiness-fix-pack-[repo].zip`. ShipSeal does not write to GitHub in the current MVP. The future `Create Readiness PR` path is documented in [Suggested Readiness Fix Pack](docs/SUGGESTED_READINESS_FIX_PACK.md).
+These files can be previewed, copied, downloaded as a separate `shipseal-readiness-fix-pack-[repo].zip`, or used to create a reviewed GitHub Pull Request. ShipSeal never pushes directly to `main`.
 
 Delivery Pack and Readiness Fix Pack are intentionally separate:
 
@@ -123,11 +123,13 @@ Delivery Pack and Readiness Fix Pack are intentionally separate:
 
 See [Readiness Fix Pack](docs/READINESS_FIX_PACK.md) for manual branch and pull request steps.
 
-## Create Readiness PR Preview
+## Create Readiness PR MVP
 
-The scan result page now previews the future `Create Readiness PR` workflow. It shows the planned branch, PR title, summary, changed files, readiness areas, safety note, and manual Git fallback.
+The scan result page includes a careful `Create Readiness PR` MVP. It shows the planned branch, PR title, summary, changed files, readiness areas, safety note, workflow-file warning, and manual Git fallback.
 
-This is preview-only in the MVP. ShipSeal does not request GitHub tokens, does not write to repositories, and does not push to `main`. A future integration should create a separate branch such as `shipseal/readiness-pack` and open a pull request for human review. See [Create Readiness PR Plan](docs/CREATE_READINESS_PR_PLAN.md).
+The MVP asks for a GitHub fine-grained token or GitHub App token only when the user clicks `Create Readiness PR`. The token is used only for that request, is not stored in `localStorage` or `sessionStorage`, and is not returned in API responses. ShipSeal creates a separate branch such as `shipseal/readiness-pack` or a timestamped fallback branch, uploads the Readiness Fix Pack files, and opens a Pull Request for human review.
+
+Workflow files such as `.github/workflows/ci.yml` are sensitive and should be reviewed carefully before merging. See [Create Readiness PR Plan](docs/CREATE_READINESS_PR_PLAN.md).
 
 ## MVP Validation Offer
 

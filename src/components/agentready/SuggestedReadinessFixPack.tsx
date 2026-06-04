@@ -9,6 +9,7 @@ import {
   buildSuggestedReadinessFixPack,
 } from '@/lib/readinessFixPack';
 import { buildReadinessPrPlan } from '@/lib/readinessPr';
+import { CreateReadinessPrDialog } from './CreateReadinessPrDialog';
 
 interface Props {
   report: ReadinessReport;
@@ -112,13 +113,13 @@ export function SuggestedReadinessFixPack({ report }: Props) {
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="font-display font-semibold">Create Readiness PR</h3>
-              <Badge variant="outline" className="border-warning/50 text-warning">Coming soon</Badge>
+              <Badge variant="outline" className="border-accent/50 text-accent">MVP write</Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
               Preview the repository changes ShipSeal would propose in a safe pull request.
             </p>
             <p className="text-xs text-muted-foreground mt-2">
-              No GitHub write happens in this MVP. This is a preview only; a future version would create a separate branch and open a pull request for human review.
+              ShipSeal will only write after you review the files, provide a token, and confirm the operation. It creates a separate branch and opens a pull request for human review.
             </p>
           </div>
         </div>
@@ -183,9 +184,7 @@ export function SuggestedReadinessFixPack({ report }: Props) {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2">
-              <Button type="button" disabled className="bg-gradient-primary border-0 shadow-glow">
-                <GitPullRequestDraft className="h-3.5 w-3.5 mr-1.5" /> Create Readiness PR — coming soon
-              </Button>
+              <CreateReadinessPrDialog report={report} files={files} />
               <Button type="button" variant="outline" onClick={copyManualSteps}>
                 <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy manual Git steps
               </Button>

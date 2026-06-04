@@ -1,8 +1,8 @@
 # Create Readiness PR Plan
 
-Create Readiness PR is the future ShipSeal workflow for proposing repository-ready files through a reviewed pull request.
+Create Readiness PR is the ShipSeal workflow for proposing repository-ready files through a reviewed pull request.
 
-The current MVP does not write to GitHub, request OAuth, ask for tokens, create branches, or open real pull requests. It previews the planned PR and lets users download the separate ShipSeal Readiness Fix Pack ZIP.
+The current MVP can create a GitHub Pull Request when the user explicitly provides a GitHub token, reviews the file list, and confirms the operation. It does not request OAuth, install a GitHub App, store tokens, push to `main`, or merge automatically.
 
 ## Goal
 
@@ -20,7 +20,7 @@ A pull request is safer because:
 - repository owners keep control,
 - merge remains a human decision.
 
-## Planned PR Data
+## MVP PR Data
 
 - Branch name: `shipseal/readiness-pack`
 - PR title: `Add ShipSeal readiness and agent governance pack`
@@ -49,12 +49,18 @@ The downloadable Readiness Fix Pack may also include `docs/AGENT_CHANGE_POLICY.m
 
 These files are expected to improve future ShipSeal scans, depending on repository content and review. ShipSeal should not promise a guaranteed score increase.
 
-## Future GitHub Permissions
+## MVP GitHub Access
 
-A future implementation will need one of:
+The current MVP asks the user to paste a GitHub fine-grained token or GitHub App token for a single request.
 
-- GitHub OAuth with repository write permission approved by the user, or
-- a GitHub App installation with scoped repository permissions.
+The token:
+
+- is held in React state only,
+- is sent to `/api/create-readiness-pr` only for the request,
+- is used server-side only as a GitHub Authorization header,
+- is not returned in API responses,
+- is not stored in `localStorage` or `sessionStorage`,
+- is not written to reports, Delivery Packs, Readiness Fix Packs or logs.
 
 Minimum future capabilities:
 
@@ -63,17 +69,31 @@ Minimum future capabilities:
 - create or update files on that branch,
 - open a pull request.
 
-The integration should not request broad organization access by default.
+Token permissions determine whether private repositories can be accessed, but private repo usage should be tested carefully. The integration should not request broad organization access by default.
+
+## Serverless Endpoint
+
+Endpoint: `POST /api/create-readiness-pr`
+
+The endpoint:
+
+- validates owner, repo, branch, PR title, PR body and files,
+- rejects `main` and `master` as target branch names,
+- resolves the repository default branch when base branch is not provided,
+- creates `shipseal/readiness-pack` or a timestamped fallback branch if that branch already exists,
+- uploads the Readiness Fix Pack files to that branch,
+- opens a Pull Request for human review,
+- returns only the PR URL, branch name, base branch and file count.
 
 ## Security Model
 
 - No direct push to `main`.
 - No automatic merge.
-- No private repo support until explicit auth and permission boundaries are implemented.
 - No token storage in the browser.
 - No persistent storage of repository ZIPs or generated file contents unless a future product decision adds explicit storage.
 - Generated files should be opened as a PR for human review.
 - CI should run before merge.
+- Workflow files such as `.github/workflows/ci.yml` must be reviewed carefully before merge.
 
 ## Manual Fallback In The MVP
 
@@ -94,9 +114,8 @@ Then open a Pull Request on GitHub.
 ## Future Implementation Steps
 
 1. Add GitHub OAuth or GitHub App flow.
-2. Request scoped repo write permission.
-3. Create `shipseal/readiness-pack` branch.
-4. Upload generated readiness files to that branch.
-5. Open a pull request with the planned title and summary.
-6. Let the user review the PR.
-7. Merge only after an explicit human decision.
+2. Request scoped repo write permission without raw token entry.
+3. Improve branch conflict handling and PR reuse.
+4. Add richer PR body with scan summary and readiness impact.
+5. Let the user review the PR.
+6. Merge only after an explicit human decision.
