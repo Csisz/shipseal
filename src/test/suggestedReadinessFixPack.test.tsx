@@ -68,6 +68,13 @@ describe('SuggestedReadinessFixPack', () => {
     expect(within(dialog).getByText('AGENTS.md')).toBeInTheDocument();
     expect(within(dialog).getByText('.github/workflows/ci.yml')).toBeInTheDocument();
     expect(within(dialog).getByText(/This PR includes a GitHub Actions workflow file/i)).toBeInTheDocument();
+    expect(within(dialog).getAllByText('Connect GitHub').length).toBeGreaterThan(0);
+    expect(within(dialog).getByText('Recommended')).toBeInTheDocument();
+    expect(within(dialog).getByLabelText('Select repository')).toHaveAttribute('placeholder', 'Connect GitHub to list your repositories');
+    expect(within(dialog).getByText('Advanced: use a temporary token')).toBeInTheDocument();
+    expect(within(dialog).queryByLabelText('GitHub token')).not.toBeInTheDocument();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: /Advanced: use a temporary token/i }));
     expect(within(dialog).getByLabelText('GitHub token')).toBeInTheDocument();
     expect(within(dialog).getByLabelText(/I understand ShipSeal will create a branch/i)).toBeInTheDocument();
 
@@ -120,6 +127,9 @@ describe('SuggestedReadinessFixPack', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Create Readiness PR$/i }));
 
     const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText('Current repository: Csisz/shipseal')).toBeInTheDocument();
+    expect(within(dialog).queryByLabelText('GitHub token')).not.toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: /Advanced: use a temporary token/i }));
     expect(within(dialog).getByLabelText('Repository owner')).toHaveValue('Csisz');
     expect(within(dialog).getByLabelText('Repository name')).toHaveValue('shipseal');
     expect(within(dialog).getByLabelText('Base branch')).toHaveValue('');
@@ -156,6 +166,8 @@ describe('SuggestedReadinessFixPack', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Create Readiness PR$/i }));
 
     const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByLabelText('Select repository')).toHaveAttribute('placeholder', 'Connect GitHub to list your repositories');
+    fireEvent.click(within(dialog).getByRole('button', { name: /Advanced: use a temporary token/i }));
     const ownerInput = within(dialog).getByLabelText('Repository owner');
     const repoInput = within(dialog).getByLabelText('Repository name');
 

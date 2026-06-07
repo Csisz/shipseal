@@ -1,5 +1,11 @@
 import { useMemo, useState } from 'react';
-import { AlertTriangle, ExternalLink, GitPullRequestDraft, Plug, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, ExternalLink, GitPullRequestDraft, Github, KeyRound, Plug, ShieldCheck } from 'lucide-react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -39,13 +45,16 @@ export function CreateReadinessPrDialog({ report, files }: Props) {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState<{ pullRequestUrl: string; branchName: string } | null>(null);
+  const [advancedSection, setAdvancedSection] = useState<string>('');
 
   const hasWorkflowFile = prFiles.some(file => file.path === '.github/workflows/ci.yml');
+  const currentRepository = inferred.owner && inferred.repo ? `${inferred.owner}/${inferred.repo}` : '';
 
   const resetTransientState = () => {
     setGithubToken('');
     setError('');
     setIsSubmitting(false);
+    setAdvancedSection('');
   };
 
   const submit = async () => {
@@ -137,38 +146,102 @@ export function CreateReadinessPrDialog({ report, files }: Props) {
 
             <section className="rounded-xl border border-border/60 bg-secondary/25 p-4">
               <div className="text-xs font-mono uppercase tracking-wider text-primary-glow mb-3">Step 2: GitHub access</div>
-              <div className="grid sm:grid-cols-2 gap-3">
-                <label className="block">
-                  <span className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Repository owner</span>
-                  <Input aria-label="Repository owner" value={owner} onChange={event => setOwner(event.target.value)} />
-                </label>
-                <label className="block">
-                  <span className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Repository name</span>
-                  <Input aria-label="Repository name" value={repo} onChange={event => setRepo(event.target.value)} />
-                </label>
-                <p className="sm:col-span-2 text-xs text-muted-foreground">
-                  Repository owner and name are required only if you want ShipSeal to create a GitHub Pull Request.
-                </p>
-                <label className="block">
-                  <span className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Base branch</span>
-                  <Input aria-label="Base branch" value={baseBranch} onChange={event => setBaseBranch(event.target.value)} placeholder="Leave empty for default branch" />
-                  <span className="block mt-1.5 text-xs text-muted-foreground">Leave empty to use the repository default branch.</span>
-                </label>
-                <label className="block">
-                  <span className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">GitHub token</span>
-                  <Input
-                    aria-label="GitHub token"
-                    type="password"
-                    value={githubToken}
-                    onChange={event => setGithubToken(event.target.value)}
-                    autoComplete="off"
-                  />
-                  <span className="block mt-1.5 text-xs text-muted-foreground">
-                    Temporary MVP access: paste a GitHub fine-grained token for this request only. ShipSeal keeps it in memory and does not store it.
-                  </span>
-                </label>
+              <div className="rounded-xl border border-primary/30 bg-primary/10 p-4">
+                <div className="flex flex-wrap items-start gap-3">
+                  <Github className="h-4 w-4 text-primary-glow mt-1" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="font-display font-semibold">Connect GitHub</div>
+                      <Badge variant="outline" className="border-success/50 text-success">Recommended</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Install the ShipSeal GitHub App to select repositories and create pull requests without pasting tokens.
+                    </p>
+                  </div>
+                  <Button type="button" variant="outline" disabled className="border-border/60">
+                    <Plug className="h-3.5 w-3.5 mr-1.5" /> Connect GitHub
+                  </Button>
+                </div>
+                <div className="mt-4 grid sm:grid-cols-[1fr_auto] gap-3 sm:items-end">
+                  <label className="block">
+                    <span className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Select repository</span>
+                    <Input
+                      aria-label="Select repository"
+                      disabled
+                      placeholder="Connect GitHub to list your repositories"
+                    />
+                  </label>
+                  <Badge variant="outline" className="w-fit border-border/70 text-[10px]">Coming soon</Badge>
+                </div>
+                {currentRepository && (
+                  <p className="mt-3 text-xs text-foreground/85">Current repository: {currentRepository}</p>
+                )}
               </div>
-              <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-background/30 px-3 py-2 text-xs text-muted-foreground">
+
+              <Accordion
+                type="single"
+                collapsible
+                value={advancedSection}
+                onValueChange={setAdvancedSection}
+                className="mt-4"
+              >
+                <AccordionItem value="temporary-token" className="rounded-xl border border-border/60 bg-background/30 px-4">
+                  <AccordionTrigger className="py-3 text-left hover:no-underline">
+                    <span className="flex items-center gap-2 text-sm">
+                      <KeyRound className="h-3.5 w-3.5 text-muted-foreground" />
+                      Advanced: use a temporary token
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    {advancedSection === 'temporary-token' && (
+                      <div className="space-y-4">
+                        <div className="rounded-lg border border-border/60 bg-secondary/25 p-3">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <div className="font-medium text-sm">Use temporary GitHub token</div>
+                            <Badge variant="outline" className="border-border/70 text-[10px]">Developer/test mode</Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Developer/test mode. Token is used only for this request and is not stored.
+                          </p>
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-3">
+                          <label className="block">
+                            <span className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Repository owner</span>
+                            <Input aria-label="Repository owner" value={owner} onChange={event => setOwner(event.target.value)} />
+                          </label>
+                          <label className="block">
+                            <span className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Repository name</span>
+                            <Input aria-label="Repository name" value={repo} onChange={event => setRepo(event.target.value)} />
+                          </label>
+                          <p className="sm:col-span-2 text-xs text-muted-foreground">
+                            Repository owner and name are required only if you want ShipSeal to create a GitHub Pull Request.
+                          </p>
+                          <label className="block">
+                            <span className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Base branch</span>
+                            <Input aria-label="Base branch" value={baseBranch} onChange={event => setBaseBranch(event.target.value)} placeholder="Leave empty for default branch" />
+                            <span className="block mt-1.5 text-xs text-muted-foreground">Leave empty to use the repository default branch.</span>
+                          </label>
+                          <label className="block">
+                            <span className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">GitHub token</span>
+                            <Input
+                              aria-label="GitHub token"
+                              type="password"
+                              value={githubToken}
+                              onChange={event => setGithubToken(event.target.value)}
+                              autoComplete="off"
+                            />
+                            <span className="block mt-1.5 text-xs text-muted-foreground">
+                              Temporary MVP access: paste a GitHub fine-grained token for this request only. ShipSeal keeps it in memory and does not store it.
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+
+              <div className="mt-4 flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-background/30 px-3 py-2 text-xs text-muted-foreground">
                 <Plug className="h-3.5 w-3.5 text-primary-glow" />
                 <span>Recommended future flow: Connect GitHub instead of pasting a token.</span>
                 <Badge variant="outline" className="border-border/70 text-[10px]">Connect GitHub - planned</Badge>

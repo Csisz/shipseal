@@ -148,6 +148,32 @@ Recommended future flow: `Connect GitHub - planned`. Production should use a Git
 
 Workflow files such as `.github/workflows/ci.yml` are sensitive and should be reviewed carefully before merging. See [Create Readiness PR Plan](docs/CREATE_READINESS_PR_PLAN.md).
 
+## Connect GitHub Roadmap
+
+The intended production path is `Connect GitHub -> select repository -> scan -> generate Delivery Pack -> create Readiness PR`.
+
+Current MVP:
+
+- public GitHub import for scan inputs,
+- temporary token mode for developer/testing PR creation,
+- no stored tokens,
+- no GitHub App installation yet.
+
+Next:
+
+- GitHub App install / Connect GitHub flow,
+- callback endpoint and server-side installation token handling,
+- repository dropdown populated from the connected installation,
+- one-click Readiness PR creation after human preview.
+
+Later:
+
+- private repository support through GitHub App installation,
+- selected-repository access by default,
+- audit log for connect, scan, branch, file write, and PR events.
+
+See [GitHub App Connect Plan](docs/GITHUB_APP_CONNECT_PLAN.md).
+
 ## MVP Validation Offer
 
 The first offer to validate is simple: ShipSeal turns an AI prototype or client automation repository into a client-ready Delivery Pack before handoff.
