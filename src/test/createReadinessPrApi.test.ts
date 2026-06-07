@@ -81,6 +81,39 @@ describe('Create Readiness PR API', () => {
     expect(paths).toContain('.github/workflows/ci.yml');
   });
 
+  it('infers owner and repo from owner/repo repository names and honors default branch metadata', () => {
+    const report = {
+      ...buildSampleReport(),
+      repoName: 'Csisz/shipseal',
+      source: {
+        sourceType: 'github-url' as const,
+        githubDefaultBranch: 'develop',
+      },
+    };
+
+    const payload = buildCreateReadinessPrPayload({ report, githubToken: 'ghp_mock' });
+
+    expect(payload.owner).toBe('Csisz');
+    expect(payload.repo).toBe('shipseal');
+    expect(payload.baseBranch).toBe('develop');
+  });
+
+  it('leaves base branch unset when GitHub metadata does not include a branch', () => {
+    const report = {
+      ...buildSampleReport(),
+      source: {
+        sourceType: 'github-url' as const,
+        githubOwner: 'Csisz',
+        githubRepo: 'shipseal',
+        sourceUrl: 'https://github.com/Csisz/shipseal',
+      },
+    };
+
+    const payload = buildCreateReadinessPrPayload({ report, githubToken: 'ghp_mock' });
+
+    expect(payload.baseBranch).toBeUndefined();
+  });
+
   it('creates a branch, uploads files, and opens a pull request with mocked GitHub calls', async () => {
     const calls: string[] = [];
     const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {

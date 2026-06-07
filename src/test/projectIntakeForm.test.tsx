@@ -18,6 +18,32 @@ describe('ProjectIntakeForm', () => {
     expect(screen.getByText(/Client report quality improves when these fields are completed/i)).toBeInTheDocument();
   });
 
+  it('renders full readable toggle labels with helper text', () => {
+    render(<ProjectIntakeForm value={createDefaultProjectIntake('demo-repo')} onChange={vi.fn()} />);
+
+    expect(screen.getByText('Used in EU')).toBeInTheDocument();
+    expect(screen.getByText('Personal data')).toBeInTheDocument();
+    expect(screen.getByText('User-facing content')).toBeInTheDocument();
+    expect(screen.getByText('Human approval')).toBeInTheDocument();
+    expect(screen.queryByText('Used')).not.toBeInTheDocument();
+    expect(screen.queryByText('Personal')).not.toBeInTheDocument();
+    expect(screen.queryByText('User-facing')).not.toBeInTheDocument();
+    expect(screen.queryByText('Approval')).not.toBeInTheDocument();
+    expect(screen.getByText(/people in the EU use/i)).toBeInTheDocument();
+    expect(screen.getByText(/data that can identify/i)).toBeInTheDocument();
+    expect(screen.getByText(/AI-generated answers/i)).toBeInTheDocument();
+    expect(screen.getByText(/review or escalation/i)).toBeInTheDocument();
+  });
+
+  it('keeps the toggle cards clickable', () => {
+    const onChange = vi.fn();
+    render(<ProjectIntakeForm value={createDefaultProjectIntake('demo-repo')} onChange={onChange} />);
+
+    fireEvent.click(screen.getByText('Used in EU'));
+
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ usedInEU: true }));
+  });
+
   it('loads demo data only when Load demo project is clicked', () => {
     const onChange = vi.fn();
     render(<ProjectIntakeForm value={createDefaultProjectIntake('real-repo')} onChange={onChange} />);

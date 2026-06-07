@@ -2,7 +2,7 @@
 
 Create Readiness PR is the ShipSeal workflow for proposing repository-ready files through a reviewed pull request.
 
-The current MVP can create a GitHub Pull Request when the user explicitly provides a GitHub token, reviews the file list, and confirms the operation. It does not request OAuth, install a GitHub App, store tokens, push to `main`, or merge automatically.
+The current MVP can create a GitHub Pull Request when the user explicitly provides a GitHub fine-grained token for this request only, reviews the file list, and confirms the operation. It does not request OAuth, install a GitHub App, store tokens, push to `main`, or merge automatically.
 
 ## Goal
 
@@ -51,7 +51,7 @@ These files are expected to improve future ShipSeal scans, depending on reposito
 
 ## MVP GitHub Access
 
-The current MVP asks the user to paste a GitHub fine-grained token or GitHub App token for a single request.
+The current MVP asks the user to paste a GitHub fine-grained token for a single request. Token-free automatic PR creation is not possible in the MVP because ShipSeal needs explicit GitHub write authorization to create a branch, upload files, and open a Pull Request.
 
 The token:
 
@@ -61,6 +61,10 @@ The token:
 - is not returned in API responses,
 - is not stored in `localStorage` or `sessionStorage`,
 - is not written to reports, Delivery Packs, Readiness Fix Packs or logs.
+
+The modal can reduce manual entry by auto-filling repository owner and name from GitHub import metadata, a parsed GitHub URL such as `https://github.com/Csisz/shipseal`, or a repository name already shaped as `owner/repo`. ZIP uploads can still fill those fields manually.
+
+Base branch is optional in the UI. If the GitHub import later includes default branch metadata, ShipSeal can prefill it. If it is left empty, `/api/create-readiness-pr` resolves the repository default branch through the GitHub API before creating the branch.
 
 Minimum future capabilities:
 
@@ -85,6 +89,8 @@ The endpoint:
 - opens a Pull Request for human review,
 - returns only the PR URL, branch name, base branch and file count.
 
+The endpoint still requires a token in the MVP. Later production versions should use a GitHub App installation token instead of a pasted user token.
+
 ## Security Model
 
 - No direct push to `main`.
@@ -94,6 +100,18 @@ The endpoint:
 - Generated files should be opened as a PR for human review.
 - CI should run before merge.
 - Workflow files such as `.github/workflows/ci.yml` must be reviewed carefully before merge.
+
+## Future GitHub App Flow
+
+Recommended future flow: `Connect GitHub - planned`.
+
+Production should replace pasted tokens with a GitHub App / Connect GitHub flow:
+
+- user installs or connects the ShipSeal GitHub App,
+- ShipSeal requests narrow repository access,
+- ShipSeal uses an installation token to read repository metadata, resolve the default branch, create a feature branch, write the generated files, and open a Pull Request,
+- no long-lived user token is stored by ShipSeal,
+- every PR still targets a review branch and never pushes directly to `main`.
 
 ## Manual Fallback In The MVP
 
@@ -113,9 +131,10 @@ Then open a Pull Request on GitHub.
 
 ## Future Implementation Steps
 
-1. Add GitHub OAuth or GitHub App flow.
+1. Add GitHub App / Connect GitHub flow.
 2. Request scoped repo write permission without raw token entry.
-3. Improve branch conflict handling and PR reuse.
-4. Add richer PR body with scan summary and readiness impact.
-5. Let the user review the PR.
-6. Merge only after an explicit human decision.
+3. Use GitHub App installation tokens for PR creation.
+4. Improve branch conflict handling and PR reuse.
+5. Add richer PR body with scan summary and readiness impact.
+6. Let the user review the PR.
+7. Merge only after an explicit human decision.

@@ -111,6 +111,7 @@ export interface ScanSourceMetadata {
   githubOwner?: string;
   githubRepo?: string;
   githubBranch?: string;
+  githubDefaultBranch?: string;
   sourceUrl?: string;
 }
 

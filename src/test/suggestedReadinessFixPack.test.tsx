@@ -93,4 +93,80 @@ describe('SuggestedReadinessFixPack', () => {
     });
     expect(payload.files.map((file: { path: string }) => file.path)).toContain('.github/workflows/ci.yml');
   });
+
+  it('auto-fills owner and repo from a GitHub source URL and allows an empty base branch', async () => {
+    const report = {
+      ...buildSampleReport(),
+      repoName: 'shipseal',
+      source: {
+        sourceType: 'github-url' as const,
+        sourceUrl: 'https://github.com/Csisz/shipseal',
+      },
+    };
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        ok: true,
+        pullRequestUrl: 'https://github.com/Csisz/shipseal/pull/12',
+        branchName: 'shipseal/readiness-pack',
+        baseBranch: 'main',
+        fileCount: 8,
+      }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<SuggestedReadinessFixPack report={report} />);
+    fireEvent.click(screen.getByRole('button', { name: /^Create Readiness PR$/i }));
+
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByLabelText('Repository owner')).toHaveValue('Csisz');
+    expect(within(dialog).getByLabelText('Repository name')).toHaveValue('shipseal');
+    expect(within(dialog).getByLabelText('Base branch')).toHaveValue('');
+    expect(within(dialog).getByText(/Leave empty to use the repository default branch/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/ShipSeal keeps it in memory and does not store it/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Recommended future flow: Connect GitHub/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Connect GitHub - planned/i)).toBeInTheDocument();
+
+    fireEvent.change(within(dialog).getByLabelText('GitHub token'), { target: { value: 'ghp_mock' } });
+    fireEvent.click(within(dialog).getByLabelText(/I understand ShipSeal will create a branch/i));
+    fireEvent.click(within(dialog).getByRole('button', { name: /Create Pull Request/i }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/create-readiness-pr', expect.objectContaining({ method: 'POST' })));
+    const [, request] = fetchMock.mock.calls[0];
+    const payload = JSON.parse(request.body);
+    expect(payload).toMatchObject({
+      owner: 'Csisz',
+      repo: 'shipseal',
+      branchName: 'shipseal/readiness-pack',
+    });
+    expect(payload).not.toHaveProperty('baseBranch');
+  });
+
+  it('keeps owner and repo empty but editable for ZIP uploads', () => {
+    const report = {
+      ...buildSampleReport(),
+      repoName: 'zip-upload',
+      source: {
+        sourceType: 'zip-upload' as const,
+      },
+    };
+
+    render(<SuggestedReadinessFixPack report={report} />);
+    fireEvent.click(screen.getByRole('button', { name: /^Create Readiness PR$/i }));
+
+    const dialog = screen.getByRole('dialog');
+    const ownerInput = within(dialog).getByLabelText('Repository owner');
+    const repoInput = within(dialog).getByLabelText('Repository name');
+
+    expect(ownerInput).toHaveValue('');
+    expect(repoInput).toHaveValue('');
+    expect(within(dialog).getByText(/Repository owner and name are required only if you want ShipSeal to create a GitHub Pull Request/i)).toBeInTheDocument();
+
+    fireEvent.change(ownerInput, { target: { value: 'Csisz' } });
+    fireEvent.change(repoInput, { target: { value: 'shipseal' } });
+
+    expect(ownerInput).toHaveValue('Csisz');
+    expect(repoInput).toHaveValue('shipseal');
+  });
 });

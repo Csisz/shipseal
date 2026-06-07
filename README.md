@@ -138,7 +138,13 @@ See [Readiness Fix Pack](docs/READINESS_FIX_PACK.md) for manual branch and pull 
 
 The scan result page includes a careful `Create Readiness PR` MVP. It shows the planned branch, PR title, summary, changed files, readiness areas, safety note, workflow-file warning, and manual Git fallback.
 
-The MVP asks for a GitHub fine-grained token or GitHub App token only when the user clicks `Create Readiness PR`. The token is used only for that request, is not stored in `localStorage` or `sessionStorage`, and is not returned in API responses. ShipSeal creates a separate branch such as `shipseal/readiness-pack` or a timestamped fallback branch, uploads the Readiness Fix Pack files, and opens a Pull Request for human review.
+The MVP asks for a GitHub fine-grained token only when the user clicks `Create Readiness PR`. This is temporary MVP access for testing the write flow: the token is used only for that request, is kept in memory, is not stored in `localStorage` or `sessionStorage`, and is not returned in API responses. Token-free automatic PR creation is not possible in the MVP because GitHub write authorization is required.
+
+When a scan came from GitHub import, ShipSeal can auto-fill repository owner and name from source metadata, the parsed GitHub URL, or a repository name shaped as `owner/repo`. For ZIP uploads, those fields stay empty and editable. The base branch field can be left empty so the serverless endpoint can use the repository default branch.
+
+ShipSeal creates a separate branch such as `shipseal/readiness-pack` or a timestamped fallback branch, uploads the Readiness Fix Pack files, and opens a Pull Request for human review. ShipSeal never pushes directly to `main`.
+
+Recommended future flow: `Connect GitHub - planned`. Production should use a GitHub App / Connect GitHub flow and create PRs with a scoped GitHub App installation token instead of asking users to paste tokens.
 
 Workflow files such as `.github/workflows/ci.yml` are sensitive and should be reviewed carefully before merging. See [Create Readiness PR Plan](docs/CREATE_READINESS_PR_PLAN.md).
 

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AlertTriangle, ExternalLink, GitPullRequestDraft, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, ExternalLink, GitPullRequestDraft, Plug, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -33,7 +33,7 @@ export function CreateReadinessPrDialog({ report, files }: Props) {
   const prFiles = useMemo(() => files.filter(file => plan.files.some(planned => planned.path === file.path)), [files, plan.files]);
   const [owner, setOwner] = useState(inferred.owner);
   const [repo, setRepo] = useState(inferred.repo);
-  const [baseBranch, setBaseBranch] = useState(report.source.githubBranch || '');
+  const [baseBranch, setBaseBranch] = useState(report.source.githubDefaultBranch || report.source.githubBranch || '');
   const [githubToken, setGithubToken] = useState('');
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState('');
@@ -146,9 +146,13 @@ export function CreateReadinessPrDialog({ report, files }: Props) {
                   <span className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Repository name</span>
                   <Input aria-label="Repository name" value={repo} onChange={event => setRepo(event.target.value)} />
                 </label>
+                <p className="sm:col-span-2 text-xs text-muted-foreground">
+                  Repository owner and name are required only if you want ShipSeal to create a GitHub Pull Request.
+                </p>
                 <label className="block">
                   <span className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Base branch</span>
-                  <Input aria-label="Base branch" value={baseBranch} onChange={event => setBaseBranch(event.target.value)} placeholder="Default branch if empty" />
+                  <Input aria-label="Base branch" value={baseBranch} onChange={event => setBaseBranch(event.target.value)} placeholder="Leave empty for default branch" />
+                  <span className="block mt-1.5 text-xs text-muted-foreground">Leave empty to use the repository default branch.</span>
                 </label>
                 <label className="block">
                   <span className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">GitHub token</span>
@@ -159,11 +163,16 @@ export function CreateReadinessPrDialog({ report, files }: Props) {
                     onChange={event => setGithubToken(event.target.value)}
                     autoComplete="off"
                   />
+                  <span className="block mt-1.5 text-xs text-muted-foreground">
+                    Temporary MVP access: paste a GitHub fine-grained token for this request only. ShipSeal keeps it in memory and does not store it.
+                  </span>
                 </label>
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">
-                Use a GitHub fine-grained token or GitHub App token with access to this repository. The token is used only for this request and is not stored.
-              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-background/30 px-3 py-2 text-xs text-muted-foreground">
+                <Plug className="h-3.5 w-3.5 text-primary-glow" />
+                <span>Recommended future flow: Connect GitHub instead of pasting a token.</span>
+                <Badge variant="outline" className="border-border/70 text-[10px]">Connect GitHub - planned</Badge>
+              </div>
               <label className="mt-4 flex items-start gap-3 text-sm text-foreground/90">
                 <Checkbox
                   checked={confirmed}

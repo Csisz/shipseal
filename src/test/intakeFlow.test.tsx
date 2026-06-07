@@ -40,5 +40,9 @@ describe('ShipSeal pre-scan intake flow', () => {
     expect(screen.queryByRole('button', { name: /skip intake and scan repository only/i })).not.toBeInTheDocument();
     expect(screen.getByLabelText('Project name')).toHaveValue('real-repo');
     expect(screen.getByLabelText('Project name')).not.toHaveValue('Customer Support RAG Assistant');
+
+    fireEvent.click(screen.getByRole('button', { name: /^Continue$/i }));
+
+    expect(screen.getByText(/Scanning repository/i)).toBeInTheDocument();
   });
 });

@@ -79,24 +79,28 @@ export function ProjectIntakeForm({ value, onChange }: Props) {
         <ToggleRow
           icon={<Globe2 className="h-3.5 w-3.5" />}
           label="Used in EU"
+          helper="Will people in the EU use this AI system?"
           checked={value.usedInEU}
           onCheckedChange={checked => update('usedInEU', checked)}
         />
         <ToggleRow
           icon={<ShieldCheck className="h-3.5 w-3.5" />}
           label="Personal data"
+          helper="Does the app process data that can identify a person?"
           checked={value.handlesPersonalData}
           onCheckedChange={checked => update('handlesPersonalData', checked)}
         />
         <ToggleRow
           icon={<Building2 className="h-3.5 w-3.5" />}
           label="User-facing content"
+          helper="Can end users see AI-generated answers or content?"
           checked={value.generatesUserFacingContent}
           onCheckedChange={checked => update('generatesUserFacingContent', checked)}
         />
         <ToggleRow
           icon={<UserCheck className="h-3.5 w-3.5" />}
           label="Human approval"
+          helper="Is there a human review or escalation step?"
           checked={value.hasHumanApproval}
           onCheckedChange={checked => update('hasHumanApproval', checked)}
         />
@@ -114,14 +118,38 @@ function Field({ label, children, className = '' }: { label: string; children: R
   );
 }
 
-function ToggleRow({ icon, label, checked, onCheckedChange }: { icon: React.ReactNode; label: string; checked: boolean; onCheckedChange: (checked: boolean) => void }) {
+function ToggleRow({
+  icon,
+  label,
+  helper,
+  checked,
+  onCheckedChange,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  helper: string;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}) {
   return (
-    <div className="rounded-lg border border-border/60 bg-secondary/25 px-3 py-2.5 flex items-center justify-between gap-3">
-      <div className="min-w-0 flex items-center gap-2 text-sm text-foreground/90">
-        <span className="text-primary-glow shrink-0">{icon}</span>
-        <span className="truncate">{label}</span>
+    <div
+      className="min-w-0 rounded-lg border border-border/60 bg-secondary/25 px-3 py-3 flex items-start justify-between gap-3 cursor-pointer hover:border-primary/30 transition-colors"
+      onClick={() => onCheckedChange(!checked)}
+    >
+      <div className="min-w-0 flex items-start gap-2 text-sm text-foreground/90">
+        <span className="text-primary-glow shrink-0 mt-0.5">{icon}</span>
+        <span className="min-w-0">
+          <span className="block font-medium leading-snug whitespace-normal">{label}</span>
+          <span className="block text-xs leading-relaxed text-muted-foreground mt-1 whitespace-normal">{helper}</span>
+        </span>
       </div>
-      <Switch checked={checked} onCheckedChange={onCheckedChange} />
+      <Switch
+        aria-label={label}
+        checked={checked}
+        onCheckedChange={onCheckedChange}
+        onClick={event => event.stopPropagation()}
+        className="shrink-0 mt-0.5"
+      />
     </div>
   );
 }

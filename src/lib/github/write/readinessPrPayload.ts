@@ -28,7 +28,7 @@ export function buildCreateReadinessPrPayload({
   return {
     owner: repoInfo.owner,
     repo: repoInfo.repo,
-    baseBranch: baseBranch || report.source.githubBranch || undefined,
+    baseBranch: baseBranch || report.source.githubDefaultBranch || report.source.githubBranch || undefined,
     branchName: plan.branchName,
     prTitle: plan.title,
     prBody: `${plan.summary}\n\n${plan.safetyNote}\n\n${plan.expectedImpactNote}`,
@@ -49,6 +49,10 @@ export function inferGitHubRepo(report: ReadinessReport, owner?: string, repo?: 
     } catch {
       // Fall through to empty values for UI validation.
     }
+  }
+  const nameParts = report.repoName.trim().split('/');
+  if (nameParts.length === 2 && nameParts[0] && nameParts[1]) {
+    return { owner: owner || nameParts[0], repo: repo || nameParts[1].replace(/\.git$/i, '') };
   }
   return { owner: owner || '', repo: repo || '' };
 }
