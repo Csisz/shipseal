@@ -46,9 +46,14 @@ describe('GitHub App Connect plan', () => {
     expect(plan).toContain('Pull requests: read/write');
     expect(plan).toContain('Workflows: read/write');
     expect(plan).toContain('Never push directly to `main`');
+    expect(plan).toContain('VITE_GITHUB_APP_SLUG');
+    expect(plan).toContain('VITE_GITHUB_APP_INSTALL_URL');
+    expect(plan).toContain('Create a GitHub App For Local/Demo Testing');
     expect(plan).toContain('GITHUB_APP_ID');
     expect(plan).toContain('GITHUB_APP_CALLBACK_URL');
     expect(readme).toContain('Connect GitHub Roadmap');
+    expect(readme).toContain('Connect GitHub` opens the GitHub App install page');
+    expect(readme).toContain('Create a GitHub App for local/demo testing');
     expect(readme).toContain('temporary token mode');
     expect(readme).toContain('private repository support through GitHub App installation');
   });

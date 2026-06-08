@@ -156,8 +156,17 @@ Current MVP:
 
 - public GitHub import for scan inputs,
 - temporary token mode for developer/testing PR creation,
+- `Connect GitHub` opens the GitHub App install page when frontend app env is configured,
 - no stored tokens,
-- no GitHub App installation yet.
+- no callback processing or repository listing yet.
+
+Frontend demo env:
+
+- `VITE_GITHUB_APP_SLUG`
+- `VITE_GITHUB_APP_NAME` optional
+- `VITE_GITHUB_APP_INSTALL_URL` optional
+
+If `VITE_GITHUB_APP_INSTALL_URL` is set, ShipSeal uses it directly. If only `VITE_GITHUB_APP_SLUG` is set, ShipSeal opens `https://github.com/apps/{slug}/installations/new`. Without either value, the button stays disabled and explains that GitHub App install is not configured in the demo.
 
 Next:
 
@@ -173,6 +182,19 @@ Later:
 - audit log for connect, scan, branch, file write, and PR events.
 
 See [GitHub App Connect Plan](docs/GITHUB_APP_CONNECT_PLAN.md).
+
+### Create a GitHub App for local/demo testing
+
+In GitHub Developer settings, create a GitHub App named something like `ShipSeal Demo`. Use the Vercel demo URL or localhost as the Homepage URL. Set the Callback URL to the future callback endpoint, such as `/api/github-app/callback`.
+
+Repository permissions:
+
+- Metadata: read
+- Contents: read/write
+- Pull requests: read/write
+- Workflows: read/write optional, only if ShipSeal writes CI workflow files
+
+Install the app only on selected repositories. For a Vercel demo, configure `VITE_GITHUB_APP_SLUG` and optionally `VITE_GITHUB_APP_INSTALL_URL`, then redeploy. Server-side values such as `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, and `GITHUB_APP_WEBHOOK_SECRET` are reserved for the next milestone that handles callback state and repository listing.
 
 ## MVP Validation Offer
 

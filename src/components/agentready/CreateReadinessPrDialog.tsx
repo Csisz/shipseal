@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { getGitHubAppClientConfig, type GitHubAppClientConfig } from '@/lib/githubApp/config';
 import type { ReadinessReport } from '@/lib/types';
 import type { ReadinessFixPackFile } from '@/lib/readinessFixPack';
 import { buildReadinessPrPlan } from '@/lib/readinessPr';
@@ -30,13 +31,15 @@ import {
 interface Props {
   report: ReadinessReport;
   files: ReadinessFixPackFile[];
+  githubAppConfig?: GitHubAppClientConfig;
 }
 
-export function CreateReadinessPrDialog({ report, files }: Props) {
+export function CreateReadinessPrDialog({ report, files, githubAppConfig }: Props) {
   const [open, setOpen] = useState(false);
   const plan = useMemo(() => buildReadinessPrPlan(), []);
   const inferred = useMemo(() => inferGitHubRepo(report), [report]);
   const prFiles = useMemo(() => files.filter(file => plan.files.some(planned => planned.path === file.path)), [files, plan.files]);
+  const appConfig = useMemo(() => githubAppConfig || getGitHubAppClientConfig(), [githubAppConfig]);
   const [owner, setOwner] = useState(inferred.owner);
   const [repo, setRepo] = useState(inferred.repo);
   const [baseBranch, setBaseBranch] = useState(report.source.githubDefaultBranch || report.source.githubBranch || '');
@@ -55,6 +58,11 @@ export function CreateReadinessPrDialog({ report, files }: Props) {
     setError('');
     setIsSubmitting(false);
     setAdvancedSection('');
+  };
+
+  const connectGitHub = () => {
+    if (!appConfig.isConfigured) return;
+    window.open(appConfig.installUrl, '_blank', 'noopener,noreferrer');
   };
 
   const submit = async () => {
@@ -155,10 +163,22 @@ export function CreateReadinessPrDialog({ report, files }: Props) {
                       <Badge variant="outline" className="border-success/50 text-success">Recommended</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Install the ShipSeal GitHub App to select repositories and create pull requests without pasting tokens.
+                      Best for real use. Install ShipSeal on selected repositories and create readiness pull requests without pasting tokens.
                     </p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Install the {appConfig.appName} GitHub App on selected repositories. After installation, return to ShipSeal to select a repository.
+                    </p>
+                    {!appConfig.isConfigured && (
+                      <p className="text-xs text-warning mt-2">GitHub App install is not configured in this demo.</p>
+                    )}
                   </div>
-                  <Button type="button" variant="outline" disabled className="border-border/60">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={!appConfig.isConfigured}
+                    onClick={connectGitHub}
+                    className="border-border/60"
+                  >
                     <Plug className="h-3.5 w-3.5 mr-1.5" /> Connect GitHub
                   </Button>
                 </div>

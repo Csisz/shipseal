@@ -1,11 +1,14 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { CreateReadinessPrDialog } from '@/components/agentready/CreateReadinessPrDialog';
 import { SuggestedReadinessFixPack } from '@/components/agentready/SuggestedReadinessFixPack';
 import { buildSampleReport } from '@/lib/readiness';
+import { buildSuggestedReadinessFixPack } from '@/lib/readinessFixPack';
 
 describe('SuggestedReadinessFixPack', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('renders suggested files, score mapping, and Create Readiness PR action', () => {
@@ -70,6 +73,10 @@ describe('SuggestedReadinessFixPack', () => {
     expect(within(dialog).getByText(/This PR includes a GitHub Actions workflow file/i)).toBeInTheDocument();
     expect(within(dialog).getAllByText('Connect GitHub').length).toBeGreaterThan(0);
     expect(within(dialog).getByText('Recommended')).toBeInTheDocument();
+    expect(within(dialog).getByText(/Best for real use/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/After installation, return to ShipSeal to select a repository/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/GitHub App install is not configured in this demo/i)).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: /^Connect GitHub$/i })).toBeDisabled();
     expect(within(dialog).getByLabelText('Select repository')).toHaveAttribute('placeholder', 'Connect GitHub to list your repositories');
     expect(within(dialog).getByText('Advanced: use a temporary token')).toBeInTheDocument();
     expect(within(dialog).queryByLabelText('GitHub token')).not.toBeInTheDocument();
@@ -180,5 +187,38 @@ describe('SuggestedReadinessFixPack', () => {
 
     expect(ownerInput).toHaveValue('Csisz');
     expect(repoInput).toHaveValue('shipseal');
+  });
+
+  it('enables Connect GitHub and opens the GitHub App install URL when configured', () => {
+    const report = buildSampleReport();
+    const openMock = vi.spyOn(window, 'open').mockImplementation(() => null);
+
+    render(
+      <CreateReadinessPrDialog
+        report={report}
+        files={buildSuggestedReadinessFixPack(report)}
+        githubAppConfig={{
+          appName: 'ShipSeal Demo',
+          appSlug: 'shipseal-demo',
+          installUrl: 'https://github.com/apps/shipseal-demo/installations/new',
+          isConfigured: true,
+        }}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /^Create Readiness PR$/i }));
+
+    const dialog = screen.getByRole('dialog');
+    const connectButton = within(dialog).getByRole('button', { name: /^Connect GitHub$/i });
+    expect(connectButton).toBeEnabled();
+    expect(within(dialog).queryByText(/GitHub App install is not configured in this demo/i)).not.toBeInTheDocument();
+
+    fireEvent.click(connectButton);
+
+    expect(openMock).toHaveBeenCalledWith(
+      'https://github.com/apps/shipseal-demo/installations/new',
+      '_blank',
+      'noopener,noreferrer'
+    );
   });
 });
