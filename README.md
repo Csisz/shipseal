@@ -31,7 +31,7 @@ npm run dev
 
 Vite defaults to port `8080`. If that port is busy, Vite may choose another port.
 
-Use `npm run dev` for frontend-only local development. Use `vercel dev` when you also need the Vercel API routes such as `/api/github-archive`, `/api/create-readiness-pr`, and `/api/audit-request`.
+Use `npm run dev` for frontend-only local development. Use `vercel dev` when you also need the Vercel API routes such as `/api/github-archive`, `/api/create-readiness-pr`, `/api/github-app/repositories`, `/api/github-app/archive`, `/api/github-app/create-readiness-pr`, and `/api/audit-request`.
 
 If `vercel dev` shows a white page with console errors such as `GET /src/main.tsx 404`, `GET /@vite/client 404`, or `GET /@react-refresh 404`, the Vercel/Vite dev configuration is broken. `vercel.json` must use the Vite framework preset and `devCommand: "vite --host 0.0.0.0 --port $PORT"` so Vercel dev can pass its proxy port to the Vite dev server instead of serving the root `index.html` as a static file.
 
@@ -57,7 +57,7 @@ Local mode: ZIP upload is recommended. Direct GitHub ZIP import can be blocked b
 
 Hosted Vercel mode uses the same-origin proxy endpoint first: `/api/github-archive?owner=Csisz&repo=shipseal&ref=main`. If that proxy fails, the frontend can try direct codeload as a fallback, then shows the ZIP upload fallback if browser restrictions block the download. See [GitHub Import Proxy Plan](docs/GITHUB_IMPORT_PROXY_PLAN.md) for the serverless shape and security notes.
 
-Only public GitHub repositories are supported in the local MVP scan path. GitHub App installation can be configured as a source-flow placeholder, but callback processing, repository listing, private repo scanning, and GitHub App PR creation are not implemented yet.
+Public GitHub repositories can be scanned through public URL import. A configured GitHub App can also return selected repository metadata and use server-side installation tokens for archive download and Readiness PR creation. Without GitHub App server env, the connected repo UI stays honest and reports that listing is not configured.
 
 Privacy note: uploaded ZIP scanning stays local/browser-side. ShipSeal does not execute uploaded code.
 
@@ -77,7 +77,7 @@ npm run build
 npm run dev
 ```
 
-For Vercel, use `npm run build` and publish the `dist` directory; the minimal serverless endpoints under `api/` are included for public GitHub archive imports, Create Readiness PR, and optional audit requests in hosted demos. No environment variables are required for the core scan/export demo.
+For Vercel, use `npm run build` and publish the `dist` directory; the minimal serverless endpoints under `api/` are included for public GitHub archive imports, temporary-token Create Readiness PR, GitHub App repository listing/archive/PR MVP endpoints, and optional audit requests in hosted demos. No environment variables are required for the core scan/export demo.
 
 For Netlify/static-only hosting, the app still works with ZIP upload and sample project flow, but the Vercel API endpoint is not available unless an equivalent same-origin function is implemented. See [Hosted Demo Readiness](docs/HOSTED_DEMO_READINESS.md) for the full deployment and validation checklist.
 
@@ -101,7 +101,7 @@ Expected dev modes:
 
 If `vercel dev` loads a blank page and the browser console shows missing Vite files like `/src/main.tsx`, `/@vite/client`, or `/@react-refresh`, verify that `vercel.json` still contains `framework: "vite"` and `devCommand: "vite --host 0.0.0.0 --port $PORT"`.
 
-Private GitHub repositories are not supported yet. ZIP upload remains the stable fallback for demos and client validation. After deployment, run the [Hosted Smoke Test](docs/HOSTED_SMOKE_TEST.md).
+Private GitHub repositories require a configured GitHub App installation and server env. ZIP upload remains the stable fallback for demos and client validation. After deployment, run the [Hosted Smoke Test](docs/HOSTED_SMOKE_TEST.md).
 
 ### Founder-Reviewed Audit Form
 
@@ -138,13 +138,15 @@ See [Readiness Fix Pack](docs/READINESS_FIX_PACK.md) for manual branch and pull 
 
 The scan result page includes a careful `Create Readiness PR` MVP. It shows the planned branch, PR title, summary, changed files, readiness areas, safety note, workflow-file warning, GitHub connection state, and manual Git fallback.
 
-The MVP asks for a GitHub fine-grained token only when the user clicks `Create Readiness PR`. This is temporary MVP access for testing the write flow: the token is used only for that request, is kept in memory, is not stored in `localStorage` or `sessionStorage`, and is not returned in API responses. Token-free automatic PR creation is not possible in the MVP because GitHub write authorization is required.
+The recommended path is a connected GitHub App repository. When the scan source includes a GitHub App `installationId`, owner, and repo, ShipSeal can create the Readiness PR via `POST /api/github-app/create-readiness-pr` with a server-side installation token. The user does not paste a token in this path, and the installation token is not returned to the browser.
+
+Advanced / Developer mode still supports a GitHub fine-grained token for testing the older write flow through `POST /api/create-readiness-pr`. The token is used only for that request, is kept in memory, is not stored in `localStorage` or `sessionStorage`, and is not returned in API responses.
 
 When a scan came from GitHub import, ShipSeal can auto-fill repository owner and name from source metadata, the parsed GitHub URL, or a repository name shaped as `owner/repo`. For ZIP uploads, those fields stay empty and editable. The base branch field can be left empty so the serverless endpoint can use the repository default branch.
 
 ShipSeal creates a separate branch such as `shipseal/readiness-pack` or a timestamped fallback branch, uploads the Readiness Fix Pack files, and opens a Pull Request for human review. ShipSeal never pushes directly to `main`.
 
-Recommended flow: `Connect GitHub -> select repository -> scan -> generate -> create PR`. Production should use a GitHub App / Connect GitHub flow and create PRs with a scoped GitHub App installation token instead of asking users to paste tokens.
+Recommended flow: `Connect GitHub -> select repository -> scan -> generate -> create PR`. The current GitHub App MVP uses scoped installation tokens server-side for repository listing, archive download, and PR creation. It does not store sessions or add webhook/audit-log hardening yet.
 
 Workflow files such as `.github/workflows/ci.yml` are sensitive and should be reviewed carefully before merging. See [Create Readiness PR Plan](docs/CREATE_READINESS_PR_PLAN.md).
 
@@ -165,9 +167,11 @@ Current MVP:
 - `Connect GitHub` opens the GitHub App install page when frontend app env is configured,
 - `/api/github-app/callback` reads `installation_id` and redirects to `/?githubInstallationId=...#scan`,
 - `/api/github-app/repositories` returns `not_configured` without server credentials and can list repositories when GitHub App server env is configured,
+- `/api/github-app/archive` downloads the selected repository archive with a server-side GitHub App installation token,
+- `/api/github-app/create-readiness-pr` creates the ShipSeal branch, writes Readiness Fix Pack files, and opens a PR with a server-side installation token,
 - shared GitHub connection state tracks source mode, owner/repo, repository listing capability, and PR creation capability,
 - no stored tokens,
-- no GitHub App token based PR creation yet.
+- no session database, webhook handling, automatic merge, or direct `main` push.
 
 Frontend demo env:
 
@@ -177,12 +181,21 @@ Frontend demo env:
 
 If `VITE_GITHUB_APP_INSTALL_URL` is set, ShipSeal uses it directly. If only `VITE_GITHUB_APP_SLUG` is set, ShipSeal opens `https://github.com/apps/{slug}/installations/new`. Without either value, the button stays disabled and explains that GitHub App install is not configured in the demo.
 
+Server-side Vercel env for repository listing, App archive download, and App PR creation:
+
+- `GITHUB_APP_ID`
+- `GITHUB_APP_PRIVATE_KEY`
+- `GITHUB_API_BASE_URL` optional, defaults to `https://api.github.com`
+
+Keep `GITHUB_APP_PRIVATE_KEY` server-side only. If Vercel stores the key on one line, preserve newlines as `\n`; ShipSeal normalizes escaped newlines before signing the GitHub App JWT.
+
 Next:
 
-- GitHub App install / Connect GitHub flow,
-- callback endpoint and server-side installation token handling,
-- repository dropdown populated from the connected installation,
-- one-click Readiness PR creation after human preview.
+- callback/session hardening,
+- repository selection persistence across refresh,
+- clearer private repository scanning UX,
+- branch conflict reuse/update behavior,
+- audit log for connect, scan, branch, file write, and PR events.
 
 Later:
 
@@ -203,9 +216,7 @@ Repository permissions:
 - Pull requests: read/write
 - Workflows: read/write optional, only if ShipSeal writes CI workflow files
 
-Install the app only on selected repositories. For a Vercel demo, configure `VITE_GITHUB_APP_SLUG` and optionally `VITE_GITHUB_APP_INSTALL_URL`, then redeploy. Server-side values such as `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, and `GITHUB_APP_WEBHOOK_SECRET` are reserved for the next milestone that handles callback state and repository listing.
-
-For repository listing on Vercel, set `GITHUB_APP_ID` and `GITHUB_APP_PRIVATE_KEY` as server-side environment variables. Keep the private key out of frontend env vars. If the private key is stored with escaped newlines, use `\n`; ShipSeal normalizes it before creating the GitHub App JWT. Callback URL should be `https://YOUR_DOMAIN/api/github-app/callback`.
+Install the app only on selected repositories. For a Vercel demo, configure `VITE_GITHUB_APP_SLUG` and optionally `VITE_GITHUB_APP_INSTALL_URL`, then redeploy. For repository listing, App archive download, and App PR creation, set `GITHUB_APP_ID` and `GITHUB_APP_PRIVATE_KEY` as server-side environment variables. Keep the private key out of frontend env vars. Callback URL should be `https://YOUR_DOMAIN/api/github-app/callback`.
 
 ## MVP Validation Offer
 

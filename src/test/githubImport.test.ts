@@ -6,6 +6,7 @@ import {
   buildGitHubProxyImportUrl,
   buildGitHubZipUrl,
   GitHubImportError,
+  importGitHubAppRepoArchive,
   importPublicGitHubRepo,
 } from '@/lib/github/githubImport';
 import { LocalScanEngine } from '@/lib/scanEngine';
@@ -169,6 +170,32 @@ describe('public GitHub import helpers', () => {
     await expect(importPublicGitHubRepo({ url: 'not a repo' }))
       .rejects
       .toMatchObject({ category: 'invalid-url' } satisfies Partial<GitHubImportError>);
+  });
+
+  it('imports a selected GitHub App repository archive with installation metadata', async () => {
+    const file = await demoZipFile();
+    const headers = new Headers({ 'content-length': String(file.size) });
+    const fetchMock = vi.fn(async () => new Response(file, { status: 200, headers }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const imported = await importGitHubAppRepoArchive({
+      installationId: '12345',
+      owner: 'Csisz',
+      repo: 'shipseal',
+      ref: 'main',
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/github-app/archive?installationId=12345&owner=Csisz&repo=shipseal&ref=main', { method: 'GET', redirect: 'follow' });
+    expect(imported.file.name).toBe('Csisz-shipseal-main.zip');
+    expect(imported.source).toMatchObject({
+      sourceType: 'github-url',
+      githubOwner: 'Csisz',
+      githubRepo: 'shipseal',
+      githubBranch: 'main',
+      githubDefaultBranch: 'main',
+      githubInstallationId: '12345',
+      sourceUrl: 'https://github.com/Csisz/shipseal/tree/main',
+    } satisfies ScanSourceMetadata);
   });
 
   it('ZIP upload flow still works with zip-upload source metadata', async () => {

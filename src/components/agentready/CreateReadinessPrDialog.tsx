@@ -24,7 +24,9 @@ import type { ReadinessFixPackFile } from '@/lib/readinessFixPack';
 import { buildReadinessPrPlan } from '@/lib/readinessPr';
 import {
   CreateReadinessPrClientError,
+  buildCreateGitHubAppReadinessPrPayload,
   buildCreateReadinessPrPayload,
+  createGitHubAppReadinessPr,
   createReadinessPr,
   inferGitHubRepo,
 } from '@/lib/github/write';
@@ -72,6 +74,32 @@ export function CreateReadinessPrDialog({ report, files, githubAppConfig, github
   const submit = async () => {
     setError('');
     setSuccess(null);
+    if (connection.canCreatePullRequest && connection.installationId && connection.owner && connection.repo) {
+      if (!confirmed) {
+        setError('Confirm that ShipSeal will create a branch and open a Pull Request.');
+        return;
+      }
+
+      setIsSubmitting(true);
+      try {
+        const response = await createGitHubAppReadinessPr(buildCreateGitHubAppReadinessPrPayload({
+          report,
+          installationId: connection.installationId,
+          owner: connection.owner,
+          repo: connection.repo,
+          baseBranch: baseBranch || connection.defaultBranch || undefined,
+        }));
+        setSuccess({ pullRequestUrl: response.prUrl, branchName: response.branchName });
+      } catch (requestError) {
+        setError(requestError instanceof CreateReadinessPrClientError
+          ? requestError.message
+          : 'Create Readiness PR failed. Check repository access and try again.');
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
     if (!owner.trim() || !repo.trim()) {
       setError('GitHub owner and repository are required.');
       return;
@@ -165,10 +193,7 @@ export function CreateReadinessPrDialog({ report, files, githubAppConfig, github
                     <div className="min-w-0 flex-1">
                       <div className="font-display font-semibold">Connected repository: {connectedRepository}</div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        ShipSeal can create a Readiness PR for this connected repository after you review the files.
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        GitHub App PR creation is coming next. Temporary token mode is still available for developer testing.
+                        ShipSeal will create the Readiness PR through the GitHub App. No token paste is required.
                       </p>
                     </div>
                     <Badge variant="outline" className="border-success/50 text-success">Connected</Badge>

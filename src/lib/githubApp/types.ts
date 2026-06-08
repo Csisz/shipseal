@@ -1,4 +1,5 @@
 export interface GitHubAppRepository {
+  id: number;
   owner: string;
   name: string;
   fullName: string;

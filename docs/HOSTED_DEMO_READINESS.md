@@ -21,7 +21,7 @@ Vercel dev with API routes:
 vercel dev
 ```
 
-Use `vercel dev` when testing `/api/github-archive`, `/api/create-readiness-pr`, and `/api/audit-request` together with the frontend.
+Use `vercel dev` when testing `/api/github-archive`, `/api/create-readiness-pr`, `/api/github-app/repositories`, `/api/github-app/archive`, `/api/github-app/create-readiness-pr`, and `/api/audit-request` together with the frontend.
 
 If `vercel dev` opens a white page and the console shows `GET /src/main.tsx 404`, `GET /@vite/client 404`, or `GET /@react-refresh 404`, Vercel is serving the root `index.html` as a static file instead of proxying the Vite dev server. Check that `vercel.json` uses `framework: "vite"` and `devCommand: "vite --host 0.0.0.0 --port $PORT"`.
 
@@ -35,8 +35,9 @@ Optional:
 - `VITE_GITHUB_APP_SLUG`: enables the source-level Connect GitHub install URL.
 - `VITE_GITHUB_APP_INSTALL_URL`: optional explicit GitHub App install URL.
 - `VITE_GITHUB_APP_NAME`: optional display name for the GitHub App.
-- `GITHUB_APP_ID`: server-side GitHub App id for repository listing.
-- `GITHUB_APP_PRIVATE_KEY`: server-side GitHub App private key for repository listing.
+- `GITHUB_APP_ID`: server-side GitHub App id for repository listing, archive download, and App PR creation.
+- `GITHUB_APP_PRIVATE_KEY`: server-side GitHub App private key for repository listing, archive download, and App PR creation.
+- `GITHUB_API_BASE_URL`: optional GitHub API base URL, defaults to `https://api.github.com`.
 - `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, `GITHUB_APP_WEBHOOK_SECRET`: reserved for later callback/session/webhook hardening.
 
 If `CONTACT_WEBHOOK_URL` is configured, the in-app audit request form validates the payload and forwards it server-side. If it is not configured, the form still validates input but the endpoint returns `503` with `Audit request form is not configured yet.`
@@ -45,7 +46,7 @@ Set variables in Vercel Dashboard -> Project Settings -> Environment Variables. 
 
 Do not add OpenAI, Anthropic, GitHub private keys, Stripe, or private API keys to the client-side app. `GITHUB_APP_PRIVATE_KEY` must be server-side only. If Vercel stores the private key on one line, preserve newlines as `\n`; ShipSeal normalizes escaped newlines before creating the GitHub App JWT.
 
-## GitHub App Callback And Repository Listing
+## GitHub App Callback, Repository Listing, Archive, And PR
 
 For a hosted GitHub App demo:
 
@@ -54,11 +55,11 @@ For a hosted GitHub App demo:
 3. Give repository permissions: Metadata read, Contents read/write, Pull requests read/write, and Workflows read/write only if workflow files are written.
 4. Install only on selected repositories.
 5. Set `VITE_GITHUB_APP_SLUG` or `VITE_GITHUB_APP_INSTALL_URL`.
-6. Set `GITHUB_APP_ID` and `GITHUB_APP_PRIVATE_KEY` when repository listing should call GitHub.
+6. Set `GITHUB_APP_ID` and `GITHUB_APP_PRIVATE_KEY` when repository listing, archive download, and App PR creation should call GitHub.
 
 After install, GitHub returns to `/api/github-app/callback?installation_id=...&setup_action=...`. ShipSeal redirects to `/?githubInstallationId=...&githubSetupAction=...#scan`, then calls `/api/github-app/repositories?installationId=...`.
 
-If server credentials are missing, the repository selector shows that listing is not configured. If credentials are present, ShipSeal lists `{ owner, name, fullName, defaultBranch, private, htmlUrl }` metadata. Private repository archive scanning through GitHub App and GitHub App token based PR creation are not implemented yet.
+If server credentials are missing, the repository selector shows that listing is not configured. If credentials are present, ShipSeal lists `{ id, owner, name, fullName, defaultBranch, private, htmlUrl }` metadata. The selected repository can then be scanned through `/api/github-app/archive`, and the Create Readiness PR modal can create a PR through `/api/github-app/create-readiness-pr` without a pasted token. The MVP still has no session database, webhook processing, audit log, automatic merge, or direct `main` push.
 
 ## Vercel Demo Deployment
 
@@ -98,16 +99,15 @@ If server credentials are missing, the repository selector shows that listing is
 
 ## Not Supported Yet
 
-- Private repositories.
 - Authentication.
 - Payment or Stripe checkout.
 - CRM integration.
 - Backend worker scanning.
 - Server-side AI calls.
 - Persistent server storage.
-- Private GitHub App import.
-- GitHub App private repository archive scanning.
-- GitHub App token based PR creation.
+- GitHub App session persistence.
+- GitHub App webhook processing.
+- GitHub App audit history.
 - Database-backed audit history.
 
 ## Demo Flow

@@ -31,6 +31,13 @@ export interface ImportedGitHubRepo {
   source: ScanSourceMetadata;
 }
 
+export interface GitHubAppArchiveImportInput {
+  installationId: string;
+  owner: string;
+  repo: string;
+  ref?: string;
+}
+
 export const GITHUB_ZIP_FALLBACK_MESSAGE = 'Download the repository as ZIP from GitHub and upload it manually.';
 export const GITHUB_CORS_FALLBACK_MESSAGE = 'Browser restrictions blocked the GitHub ZIP download. Download the repository as ZIP from GitHub and upload it manually.';
 
@@ -195,6 +202,34 @@ export async function importPublicGitHubRepo(input: GitHubImportInput, callbacks
       githubRepo: parsed.repo,
       githubBranch: branch,
       sourceUrl: branch ? `https://github.com/${parsed.owner}/${parsed.repo}/tree/${branch}` : parsed.normalizedUrl,
+    },
+  };
+}
+
+export async function importGitHubAppRepoArchive(input: GitHubAppArchiveImportInput): Promise<ImportedGitHubRepo> {
+  const params = new URLSearchParams({
+    installationId: input.installationId,
+    owner: input.owner,
+    repo: input.repo,
+  });
+  if (input.ref?.trim()) params.set('ref', input.ref.trim());
+  const blob = await fetchGitHubArchiveBlob(`/api/github-app/archive?${params.toString()}`, {
+    owner: input.owner,
+    repo: input.repo,
+    branch: input.ref,
+  });
+  const fileName = `${input.owner}-${input.repo}${input.ref ? `-${input.ref.replace(/[^A-Za-z0-9_.-]+/g, '-')}` : ''}.zip`;
+
+  return {
+    file: new File([blob], fileName, { type: 'application/zip' }),
+    source: {
+      sourceType: 'github-url',
+      githubOwner: input.owner,
+      githubRepo: input.repo,
+      githubBranch: input.ref,
+      githubDefaultBranch: input.ref,
+      githubInstallationId: input.installationId,
+      sourceUrl: input.ref ? `https://github.com/${input.owner}/${input.repo}/tree/${input.ref}` : `https://github.com/${input.owner}/${input.repo}`,
     },
   };
 }

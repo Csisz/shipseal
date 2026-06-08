@@ -77,6 +77,7 @@ describe('UploadDropzone GitHub import copy', () => {
         githubInstallationId="12345"
         repositoryListStatus="loaded"
         repositories={[{
+          id: 1,
           owner: 'Csisz',
           name: 'shipseal',
           fullName: 'Csisz/shipseal',

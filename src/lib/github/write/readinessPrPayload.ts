@@ -2,7 +2,7 @@ import type { ReadinessReport } from '@/lib/types';
 import { buildSuggestedReadinessFixPack } from '@/lib/readinessFixPack';
 import { buildReadinessPrPlan } from '@/lib/readinessPr';
 import { parseGitHubUrl } from '@/lib/github/parseGitHubUrl';
-import type { CreateReadinessPrFilePayload, CreateReadinessPrPayload } from './types';
+import type { CreateGitHubAppReadinessPrPayload, CreateReadinessPrFilePayload, CreateReadinessPrPayload } from './types';
 
 export interface ReadinessPrPayloadInput {
   report: ReadinessReport;
@@ -34,6 +34,36 @@ export function buildCreateReadinessPrPayload({
     prBody: `${plan.summary}\n\n${plan.safetyNote}\n\n${plan.expectedImpactNote}`,
     files,
     githubToken,
+  };
+}
+
+export function buildCreateGitHubAppReadinessPrPayload({
+  report,
+  installationId,
+  owner,
+  repo,
+  baseBranch,
+}: {
+  report: ReadinessReport;
+  installationId: string;
+  owner: string;
+  repo: string;
+  baseBranch?: string;
+}): CreateGitHubAppReadinessPrPayload {
+  const plan = buildReadinessPrPlan();
+  const files = buildSuggestedReadinessFixPack(report)
+    .filter(file => isPrFile(file.path))
+    .map<CreateReadinessPrFilePayload>(file => ({ path: file.path, content: file.content }));
+
+  return {
+    installationId,
+    owner,
+    repo,
+    baseBranch: baseBranch || report.source.githubDefaultBranch || report.source.githubBranch || undefined,
+    branchName: plan.branchName,
+    prTitle: plan.title,
+    prBody: `${plan.summary}\n\n${plan.safetyNote}\n\n${plan.expectedImpactNote}`,
+    files,
   };
 }
 

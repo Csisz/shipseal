@@ -2,7 +2,7 @@
 
 Create Readiness PR is the ShipSeal workflow for proposing repository-ready files through a reviewed pull request.
 
-The current MVP can create a GitHub Pull Request when the user explicitly provides a GitHub fine-grained token for this request only, reviews the file list, and confirms the operation. The product direction is to connect GitHub before scanning, select a repository, generate outputs, then create the Readiness PR from that connected repository. The MVP does not request OAuth, exchange GitHub App installation tokens, store tokens, push to `main`, or merge automatically.
+The current MVP can create a GitHub Pull Request from a connected GitHub App repository after the user reviews the file list and confirms the operation. Advanced / Developer mode still supports a temporary GitHub fine-grained token for testing. The MVP does not request OAuth, store user PAT tokens, push to `main`, or merge automatically.
 
 ## Goal
 
@@ -51,9 +51,11 @@ These files are expected to improve future ShipSeal scans, depending on reposito
 
 ## MVP GitHub Access
 
-The current MVP asks the user to paste a GitHub fine-grained token for a single request only in Advanced / Developer mode. Token-free automatic PR creation is not possible in the MVP because ShipSeal needs explicit GitHub write authorization to create a branch, upload files, and open a Pull Request.
+The recommended MVP path uses a GitHub App installation selected before scanning. When the report source has `githubInstallationId`, owner, and repo metadata, the modal shows the connected repository and can call `POST /api/github-app/create-readiness-pr` without asking the user to paste a token.
 
-The token:
+Advanced / Developer mode asks the user to paste a GitHub fine-grained token for a single request only. This remains available for developer testing and ZIP/public URL fallback cases.
+
+The temporary token:
 
 - is held in React state only,
 - is sent to `/api/create-readiness-pr` only for the request,
@@ -64,28 +66,27 @@ The token:
 
 The modal reflects shared GitHub connection state:
 
-- Connected GitHub repo: `canCreatePullRequest = true`, so the modal can show `Connected repository: owner/repo`.
+- Connected GitHub App repo: `canCreatePullRequest = true`, so the modal can show `Connected repository: owner/repo` and create the PR through the GitHub App endpoint.
 - Public GitHub URL: scan/export only; PR creation requires connecting GitHub or using Advanced temporary token mode.
 - ZIP upload: local scan/export only; PR creation requires connecting GitHub or using Advanced temporary token mode.
-
-GitHub App PR creation is not implemented yet. Connected repository state is prepared so the next milestone can use an installation token for branch/file/PR writes. Until then, Advanced temporary token mode remains available for developer testing.
 
 The Advanced token form can reduce manual entry by auto-filling repository owner and name from GitHub import metadata, a parsed GitHub URL such as `https://github.com/Csisz/shipseal`, or a repository name already shaped as `owner/repo`. ZIP uploads can still fill those fields manually.
 
 Base branch is optional in the UI. If the GitHub import later includes default branch metadata, ShipSeal can prefill it. If it is left empty, `/api/create-readiness-pr` resolves the repository default branch through the GitHub API before creating the branch.
 
-Minimum future capabilities:
+GitHub App MVP capabilities:
 
 - read repository metadata,
+- download a selected repository archive,
 - create a branch,
 - create or update files on that branch,
 - open a pull request.
 
-Token permissions determine whether private repositories can be accessed, but private repo usage should be tested carefully. The integration should not request broad organization access by default.
+GitHub App permissions determine whether private repositories can be accessed, but private repo usage should be tested carefully. The integration should not request broad organization access by default.
 
-## Serverless Endpoint
+## Serverless Endpoints
 
-Endpoint: `POST /api/create-readiness-pr`
+Temporary token endpoint: `POST /api/create-readiness-pr`
 
 The endpoint:
 
@@ -97,23 +98,38 @@ The endpoint:
 - opens a Pull Request for human review,
 - returns only the PR URL, branch name, base branch and file count.
 
-The endpoint still requires a token in the MVP. Later production versions should use a GitHub App installation token instead of a pasted user token.
+This endpoint still requires a user-provided token and is kept as Advanced / Developer mode.
+
+GitHub App endpoint: `POST /api/github-app/create-readiness-pr`
+
+The endpoint:
+
+- validates installation id, owner, repo, branch, PR title, PR body and files,
+- requires the feature branch to use the `shipseal/` prefix,
+- rejects `main`, `master`, `develop`, and `trunk` as direct target branch names,
+- resolves the repository default branch when base branch is not provided,
+- creates `shipseal/readiness-pack` or a timestamped fallback branch if that branch already exists,
+- uploads the Readiness Fix Pack files to that branch,
+- opens a Pull Request for human review,
+- returns only the PR URL, branch name, base branch and file count,
+- never returns the GitHub App installation token.
 
 ## Security Model
 
 - No direct push to `main`.
 - No automatic merge.
-- No token storage in the browser.
+- No user PAT token storage in the browser.
+- GitHub App installation tokens are requested server-side and short-lived.
 - No persistent storage of repository ZIPs or generated file contents unless a future product decision adds explicit storage.
 - Generated files should be opened as a PR for human review.
 - CI should run before merge.
 - Workflow files such as `.github/workflows/ci.yml` must be reviewed carefully before merge.
 
-## Future GitHub App Flow
+## GitHub App Flow
 
 Recommended flow: `Connect GitHub -> select repository -> scan -> generate -> create PR`.
 
-Production should replace pasted tokens with a GitHub App / Connect GitHub flow:
+Production should continue to harden the GitHub App / Connect GitHub flow:
 
 - user installs or connects the ShipSeal GitHub App before scanning,
 - user selects a repository from the connected installation,
@@ -140,10 +156,10 @@ Then open a Pull Request on GitHub.
 
 ## Future Implementation Steps
 
-1. Add GitHub App / Connect GitHub flow.
-2. Request scoped repo write permission without raw token entry.
-3. Use GitHub App installation tokens for PR creation.
+1. Harden GitHub App callback/session state.
+2. Persist selected repository state safely.
+3. Improve private repository scanning UX.
 4. Improve branch conflict handling and PR reuse.
 5. Add richer PR body with scan summary and readiness impact.
-6. Let the user review the PR.
+6. Add audit logging for connect, scan, branch, file write, and PR events.
 7. Merge only after an explicit human decision.

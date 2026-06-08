@@ -221,8 +221,20 @@ describe('SuggestedReadinessFixPack', () => {
     );
   });
 
-  it('shows connected repository state when GitHub connection can create PRs', () => {
+  it('creates a Readiness PR through the connected GitHub App without a pasted token', async () => {
     const report = buildSampleReport();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        ok: true,
+        prUrl: 'https://github.com/Csisz/shipseal/pull/33',
+        branchName: 'shipseal/readiness-pack',
+        baseBranch: 'main',
+        fileCount: 8,
+      }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
 
     render(
       <CreateReadinessPrDialog
@@ -242,8 +254,30 @@ describe('SuggestedReadinessFixPack', () => {
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByText('Connected repository: Csisz/shipseal')).toBeInTheDocument();
     expect(within(dialog).getByText('Connected')).toBeInTheDocument();
-    expect(within(dialog).getByText(/GitHub App PR creation is coming next/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/ShipSeal will create the Readiness PR through the GitHub App/i)).toBeInTheDocument();
+    expect(within(dialog).queryByLabelText('GitHub token')).not.toBeInTheDocument();
     expect(within(dialog).queryByText(/Connect GitHub before creating a Pull Request/i)).not.toBeInTheDocument();
     expect(within(dialog).getByText('Advanced: use a temporary token')).toBeInTheDocument();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: /Create Pull Request/i }));
+    expect(within(dialog).getByText(/Confirm that ShipSeal will create a branch/i)).toBeInTheDocument();
+
+    fireEvent.click(within(dialog).getByLabelText(/I understand ShipSeal will create a branch/i));
+    fireEvent.click(within(dialog).getByRole('button', { name: /Create Pull Request/i }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/github-app/create-readiness-pr', expect.objectContaining({ method: 'POST' })));
+    expect(await within(dialog).findByText(/Readiness PR created/i)).toBeInTheDocument();
+    expect(within(dialog).getByText('https://github.com/Csisz/shipseal/pull/33')).toBeInTheDocument();
+
+    const [, request] = fetchMock.mock.calls[0];
+    const payload = JSON.parse(request.body);
+    expect(payload).toMatchObject({
+      installationId: '123',
+      owner: 'Csisz',
+      repo: 'shipseal',
+      baseBranch: 'main',
+      branchName: 'shipseal/readiness-pack',
+    });
+    expect(payload).not.toHaveProperty('githubToken');
   });
 });

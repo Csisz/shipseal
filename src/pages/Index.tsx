@@ -211,19 +211,11 @@ const Index = () => {
     if (pendingSource.type === 'zip') {
       void scan.startScan(pendingSource.file);
     } else if (pendingSource.type === 'github-app') {
-      if (pendingSource.isPrivate) {
-        toast({
-          title: 'Private repository scan not available yet',
-          description: 'Private repository archive scanning through GitHub App is not implemented yet.',
-          variant: 'destructive',
-        });
-        return;
-      }
-      void scan.startGitHubScan(pendingSource.url, pendingSource.branch, {
-        githubOwner: pendingSource.connection.owner,
-        githubRepo: pendingSource.connection.repo,
-        githubDefaultBranch: pendingSource.connection.defaultBranch,
-        githubInstallationId: pendingSource.connection.installationId,
+      void scan.startGitHubAppScan({
+        installationId: pendingSource.connection.installationId || '',
+        owner: pendingSource.connection.owner || '',
+        repo: pendingSource.connection.repo || '',
+        ref: pendingSource.connection.defaultBranch,
       });
     } else {
       void scan.startGitHubScan(pendingSource.url, pendingSource.branch);

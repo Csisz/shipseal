@@ -21,3 +21,22 @@ export interface CreateReadinessPrResponse {
   baseBranch: string;
   fileCount: number;
 }
+
+export interface CreateGitHubAppReadinessPrPayload {
+  installationId: string;
+  owner: string;
+  repo: string;
+  baseBranch?: string;
+  branchName: string;
+  prTitle: string;
+  prBody: string;
+  files: CreateReadinessPrFilePayload[];
+}
+
+export interface CreateGitHubAppReadinessPrResponse {
+  ok: true;
+  prUrl: string;
+  branchName: string;
+  baseBranch: string;
+  fileCount: number;
+}

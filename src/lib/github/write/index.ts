@@ -1,4 +1,6 @@
 export type {
+  CreateGitHubAppReadinessPrPayload,
+  CreateGitHubAppReadinessPrResponse,
   CreateReadinessPrFilePayload,
   CreateReadinessPrPayload,
   CreateReadinessPrResponse,
@@ -6,10 +8,12 @@ export type {
 
 export {
   CreateReadinessPrClientError,
+  createGitHubAppReadinessPr,
   createReadinessPr,
 } from './createReadinessPrClient';
 
 export {
+  buildCreateGitHubAppReadinessPrPayload,
   buildCreateReadinessPrPayload,
   inferGitHubRepo,
 } from './readinessPrPayload';

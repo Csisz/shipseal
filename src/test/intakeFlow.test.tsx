@@ -4,6 +4,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import Index from '@/pages/Index';
 import type { GitHubAppRepository, GitHubAppRepositoryListStatus } from '@/lib/githubApp/types';
 
+const scanMocks = vi.hoisted(() => ({
+  startScan: vi.fn(),
+  startGitHubScan: vi.fn(),
+  startGitHubAppScan: vi.fn(),
+}));
+
 vi.mock('@/components/agentready/Landing', () => ({
   Landing: ({ onScrollScan }: { onScrollScan: () => void }) => (
     <button type="button" onClick={onScrollScan}>Go to scan</button>
@@ -26,11 +32,15 @@ vi.mock('@/hooks/useRepoScan', async () => {
         errorCategory: null,
         report: null,
         steps: ['Reading repository structure'],
-        startScan: vi.fn(() => {
+        startScan: scanMocks.startScan.mockImplementation(() => {
           setStatus('scanning');
           return Promise.resolve(null);
         }),
-        startGitHubScan: vi.fn(() => {
+        startGitHubScan: scanMocks.startGitHubScan.mockImplementation(() => {
+          setStatus('scanning');
+          return Promise.resolve(null);
+        }),
+        startGitHubAppScan: scanMocks.startGitHubAppScan.mockImplementation(() => {
           setStatus('scanning');
           return Promise.resolve(null);
         }),
@@ -79,6 +89,7 @@ vi.mock('@/components/agentready/UploadDropzone', () => ({
 describe('ShipSeal pre-scan intake flow', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.clearAllMocks();
     window.history.pushState({}, '', '/');
   });
 
@@ -113,6 +124,7 @@ describe('ShipSeal pre-scan intake flow', () => {
       json: async () => ({
         status: 'ok',
         repositories: [{
+          id: 1,
           owner: 'Csisz',
           name: 'shipseal',
           fullName: 'Csisz/shipseal',
@@ -135,5 +147,16 @@ describe('ShipSeal pre-scan intake flow', () => {
     expect(screen.getByText(/GitHub App installation detected. Loading repositories/i)).toBeInTheDocument();
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/github-app/repositories?installationId=12345'));
     expect(await screen.findByRole('button', { name: /Select Csisz\/shipseal/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Select Csisz\/shipseal/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^Continue$/i }));
+
+    expect(scanMocks.startGitHubAppScan).toHaveBeenCalledWith({
+      installationId: '12345',
+      owner: 'Csisz',
+      repo: 'shipseal',
+      ref: 'main',
+    });
+    expect(screen.getByText(/Scanning repository/i)).toBeInTheDocument();
   });
 });
