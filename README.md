@@ -57,7 +57,7 @@ Local mode: ZIP upload is recommended. Direct GitHub ZIP import can be blocked b
 
 Hosted Vercel mode uses the same-origin proxy endpoint first: `/api/github-archive?owner=Csisz&repo=shipseal&ref=main`. If that proxy fails, the frontend can try direct codeload as a fallback, then shows the ZIP upload fallback if browser restrictions block the download. See [GitHub Import Proxy Plan](docs/GITHUB_IMPORT_PROXY_PLAN.md) for the serverless shape and security notes.
 
-Only public GitHub repositories are supported in the local MVP. Private repositories, tokens, OAuth, and GitHub App installation are not supported yet.
+Only public GitHub repositories are supported in the local MVP scan path. GitHub App installation can be configured as a source-flow placeholder, but callback processing, repository listing, private repo scanning, and GitHub App PR creation are not implemented yet.
 
 Privacy note: uploaded ZIP scanning stays local/browser-side. ShipSeal does not execute uploaded code.
 
@@ -136,7 +136,7 @@ See [Readiness Fix Pack](docs/READINESS_FIX_PACK.md) for manual branch and pull 
 
 ## Create Readiness PR MVP
 
-The scan result page includes a careful `Create Readiness PR` MVP. It shows the planned branch, PR title, summary, changed files, readiness areas, safety note, workflow-file warning, and manual Git fallback.
+The scan result page includes a careful `Create Readiness PR` MVP. It shows the planned branch, PR title, summary, changed files, readiness areas, safety note, workflow-file warning, GitHub connection state, and manual Git fallback.
 
 The MVP asks for a GitHub fine-grained token only when the user clicks `Create Readiness PR`. This is temporary MVP access for testing the write flow: the token is used only for that request, is kept in memory, is not stored in `localStorage` or `sessionStorage`, and is not returned in API responses. Token-free automatic PR creation is not possible in the MVP because GitHub write authorization is required.
 
@@ -144,7 +144,7 @@ When a scan came from GitHub import, ShipSeal can auto-fill repository owner and
 
 ShipSeal creates a separate branch such as `shipseal/readiness-pack` or a timestamped fallback branch, uploads the Readiness Fix Pack files, and opens a Pull Request for human review. ShipSeal never pushes directly to `main`.
 
-Recommended future flow: `Connect GitHub - planned`. Production should use a GitHub App / Connect GitHub flow and create PRs with a scoped GitHub App installation token instead of asking users to paste tokens.
+Recommended flow: `Connect GitHub -> select repository -> scan -> generate -> create PR`. Production should use a GitHub App / Connect GitHub flow and create PRs with a scoped GitHub App installation token instead of asking users to paste tokens.
 
 Workflow files such as `.github/workflows/ci.yml` are sensitive and should be reviewed carefully before merging. See [Create Readiness PR Plan](docs/CREATE_READINESS_PR_PLAN.md).
 
@@ -152,11 +152,18 @@ Workflow files such as `.github/workflows/ci.yml` are sensitive and should be re
 
 The intended production path is `Connect GitHub -> select repository -> scan -> generate Delivery Pack -> create Readiness PR`.
 
+Repository source modes:
+
+- GitHub App connected repo: scan + PR creation.
+- Public GitHub URL: scan only + export; PR creation requires GitHub connection later.
+- ZIP upload: local/browser scan + export; PR creation requires GitHub connection later or Advanced temporary token mode.
+
 Current MVP:
 
 - public GitHub import for scan inputs,
 - temporary token mode for developer/testing PR creation,
 - `Connect GitHub` opens the GitHub App install page when frontend app env is configured,
+- shared GitHub connection state tracks source mode, owner/repo, repository listing capability, and PR creation capability,
 - no stored tokens,
 - no callback processing or repository listing yet.
 

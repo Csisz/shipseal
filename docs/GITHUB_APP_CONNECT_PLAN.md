@@ -1,10 +1,18 @@
 # GitHub App Connect Plan
 
-ShipSeal's production GitHub flow should be:
+ShipSeal's ideal production source flow should be:
 
 Connect GitHub -> select repository -> scan -> generate Delivery Pack -> create Readiness PR.
 
-The current MVP keeps temporary token mode for developer testing only. The recommended user flow should move to a GitHub App connection before private repository support or one-click PR creation becomes production-ready.
+The current MVP keeps temporary token mode for developer testing only. The recommended user flow starts at repository source selection, before scan/import, so the same GitHub connection can later support Pull Request creation.
+
+## Repository Source Modes
+
+- GitHub App connected repo: scan + PR creation for the selected repository.
+- Public GitHub URL: public archive scan + export; PR creation requires connecting GitHub later.
+- ZIP upload: local/browser scan + export; PR creation requires connecting GitHub later or using developer token fallback.
+
+Shared connection state lives in `src/lib/githubConnection/types.ts` and tracks source mode, owner, repo, default branch, installation id, repository listing capability, and PR creation capability.
 
 ## Why GitHub App Instead Of Manual Tokens
 
@@ -33,16 +41,17 @@ Workflow writes should stay visibly warned in the UI because CI workflow files a
 
 ## Planned Flow
 
-1. User clicks Connect GitHub.
-2. User installs or authorizes the ShipSeal GitHub App.
-3. GitHub redirects to the callback URL.
-4. Backend stores installation id/session only.
-5. Backend requests an installation access token server-side.
-6. UI lists accessible repositories.
-7. User selects a repository.
-8. ShipSeal scans the repository archive.
-9. User previews generated readiness files.
-10. ShipSeal creates a branch and opens a Pull Request.
+1. User chooses repository source.
+2. User clicks Connect GitHub.
+3. User installs or authorizes the ShipSeal GitHub App.
+4. GitHub redirects to the callback URL.
+5. Backend stores installation id/session only.
+6. Backend requests an installation access token server-side.
+7. UI lists accessible repositories.
+8. User selects a repository.
+9. ShipSeal scans the repository archive.
+10. User previews generated readiness files.
+11. ShipSeal creates a branch and opens a Pull Request.
 
 ## Security Rules
 

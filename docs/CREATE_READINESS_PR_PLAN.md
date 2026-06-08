@@ -2,7 +2,7 @@
 
 Create Readiness PR is the ShipSeal workflow for proposing repository-ready files through a reviewed pull request.
 
-The current MVP can create a GitHub Pull Request when the user explicitly provides a GitHub fine-grained token for this request only, reviews the file list, and confirms the operation. It does not request OAuth, install a GitHub App, store tokens, push to `main`, or merge automatically.
+The current MVP can create a GitHub Pull Request when the user explicitly provides a GitHub fine-grained token for this request only, reviews the file list, and confirms the operation. The product direction is to connect GitHub before scanning, select a repository, generate outputs, then create the Readiness PR from that connected repository. The MVP does not request OAuth, exchange GitHub App installation tokens, store tokens, push to `main`, or merge automatically.
 
 ## Goal
 
@@ -51,7 +51,7 @@ These files are expected to improve future ShipSeal scans, depending on reposito
 
 ## MVP GitHub Access
 
-The current MVP asks the user to paste a GitHub fine-grained token for a single request. Token-free automatic PR creation is not possible in the MVP because ShipSeal needs explicit GitHub write authorization to create a branch, upload files, and open a Pull Request.
+The current MVP asks the user to paste a GitHub fine-grained token for a single request only in Advanced / Developer mode. Token-free automatic PR creation is not possible in the MVP because ShipSeal needs explicit GitHub write authorization to create a branch, upload files, and open a Pull Request.
 
 The token:
 
@@ -62,7 +62,13 @@ The token:
 - is not stored in `localStorage` or `sessionStorage`,
 - is not written to reports, Delivery Packs, Readiness Fix Packs or logs.
 
-The modal can reduce manual entry by auto-filling repository owner and name from GitHub import metadata, a parsed GitHub URL such as `https://github.com/Csisz/shipseal`, or a repository name already shaped as `owner/repo`. ZIP uploads can still fill those fields manually.
+The modal reflects shared GitHub connection state:
+
+- Connected GitHub repo: `canCreatePullRequest = true`, so the modal can show `Connected repository: owner/repo`.
+- Public GitHub URL: scan/export only; PR creation requires connecting GitHub or using Advanced temporary token mode.
+- ZIP upload: local scan/export only; PR creation requires connecting GitHub or using Advanced temporary token mode.
+
+The Advanced token form can reduce manual entry by auto-filling repository owner and name from GitHub import metadata, a parsed GitHub URL such as `https://github.com/Csisz/shipseal`, or a repository name already shaped as `owner/repo`. ZIP uploads can still fill those fields manually.
 
 Base branch is optional in the UI. If the GitHub import later includes default branch metadata, ShipSeal can prefill it. If it is left empty, `/api/create-readiness-pr` resolves the repository default branch through the GitHub API before creating the branch.
 
@@ -103,11 +109,12 @@ The endpoint still requires a token in the MVP. Later production versions should
 
 ## Future GitHub App Flow
 
-Recommended future flow: `Connect GitHub - planned`.
+Recommended flow: `Connect GitHub -> select repository -> scan -> generate -> create PR`.
 
 Production should replace pasted tokens with a GitHub App / Connect GitHub flow:
 
-- user installs or connects the ShipSeal GitHub App,
+- user installs or connects the ShipSeal GitHub App before scanning,
+- user selects a repository from the connected installation,
 - ShipSeal requests narrow repository access,
 - ShipSeal uses an installation token to read repository metadata, resolve the default branch, create a feature branch, write the generated files, and open a Pull Request,
 - no long-lived user token is stored by ShipSeal,

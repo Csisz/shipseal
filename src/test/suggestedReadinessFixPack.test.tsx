@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CreateReadinessPrDialog } from '@/components/agentready/CreateReadinessPrDialog';
 import { SuggestedReadinessFixPack } from '@/components/agentready/SuggestedReadinessFixPack';
+import { createConnectedGitHubConnection } from '@/lib/githubConnection/types';
 import { buildSampleReport } from '@/lib/readiness';
 import { buildSuggestedReadinessFixPack } from '@/lib/readinessFixPack';
 
@@ -72,12 +73,9 @@ describe('SuggestedReadinessFixPack', () => {
     expect(within(dialog).getByText('.github/workflows/ci.yml')).toBeInTheDocument();
     expect(within(dialog).getByText(/This PR includes a GitHub Actions workflow file/i)).toBeInTheDocument();
     expect(within(dialog).getAllByText('Connect GitHub').length).toBeGreaterThan(0);
-    expect(within(dialog).getByText('Recommended')).toBeInTheDocument();
-    expect(within(dialog).getByText(/Best for real use/i)).toBeInTheDocument();
-    expect(within(dialog).getByText(/After installation, return to ShipSeal to select a repository/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Connect GitHub before creating a Pull Request/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/GitHub App install is not configured in this demo/i)).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: /^Connect GitHub$/i })).toBeDisabled();
-    expect(within(dialog).getByLabelText('Select repository')).toHaveAttribute('placeholder', 'Connect GitHub to list your repositories');
     expect(within(dialog).getByText('Advanced: use a temporary token')).toBeInTheDocument();
     expect(within(dialog).queryByLabelText('GitHub token')).not.toBeInTheDocument();
 
@@ -135,6 +133,7 @@ describe('SuggestedReadinessFixPack', () => {
 
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByText('Current repository: Csisz/shipseal')).toBeInTheDocument();
+    expect(within(dialog).getByText(/Connect GitHub before creating a Pull Request/i)).toBeInTheDocument();
     expect(within(dialog).queryByLabelText('GitHub token')).not.toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole('button', { name: /Advanced: use a temporary token/i }));
     expect(within(dialog).getByLabelText('Repository owner')).toHaveValue('Csisz');
@@ -142,8 +141,8 @@ describe('SuggestedReadinessFixPack', () => {
     expect(within(dialog).getByLabelText('Base branch')).toHaveValue('');
     expect(within(dialog).getByText(/Leave empty to use the repository default branch/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/ShipSeal keeps it in memory and does not store it/i)).toBeInTheDocument();
-    expect(within(dialog).getByText(/Recommended future flow: Connect GitHub/i)).toBeInTheDocument();
-    expect(within(dialog).getByText(/Connect GitHub - planned/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/For production use, connect GitHub at repository source selection/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Developer\/test mode. For production use, connect GitHub/i)).toBeInTheDocument();
 
     fireEvent.change(within(dialog).getByLabelText('GitHub token'), { target: { value: 'ghp_mock' } });
     fireEvent.click(within(dialog).getByLabelText(/I understand ShipSeal will create a branch/i));
@@ -173,7 +172,7 @@ describe('SuggestedReadinessFixPack', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Create Readiness PR$/i }));
 
     const dialog = screen.getByRole('dialog');
-    expect(within(dialog).getByLabelText('Select repository')).toHaveAttribute('placeholder', 'Connect GitHub to list your repositories');
+    expect(within(dialog).getByText(/Connect GitHub before creating a Pull Request/i)).toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole('button', { name: /Advanced: use a temporary token/i }));
     const ownerInput = within(dialog).getByLabelText('Repository owner');
     const repoInput = within(dialog).getByLabelText('Repository name');
@@ -220,5 +219,30 @@ describe('SuggestedReadinessFixPack', () => {
       '_blank',
       'noopener,noreferrer'
     );
+  });
+
+  it('shows connected repository state when GitHub connection can create PRs', () => {
+    const report = buildSampleReport();
+
+    render(
+      <CreateReadinessPrDialog
+        report={report}
+        files={buildSuggestedReadinessFixPack(report)}
+        githubConnection={createConnectedGitHubConnection({
+          owner: 'Csisz',
+          repo: 'shipseal',
+          defaultBranch: 'main',
+          installationId: '123',
+        })}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /^Create Readiness PR$/i }));
+
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText('Connected repository: Csisz/shipseal')).toBeInTheDocument();
+    expect(within(dialog).getByText('Connected')).toBeInTheDocument();
+    expect(within(dialog).queryByText(/Connect GitHub before creating a Pull Request/i)).not.toBeInTheDocument();
+    expect(within(dialog).getByText('Advanced: use a temporary token')).toBeInTheDocument();
   });
 });

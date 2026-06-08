@@ -201,7 +201,7 @@ const Index = () => {
               <div className="text-xs font-mono uppercase tracking-wider text-primary-glow mb-3">Scan</div>
               <h2 className="font-display text-3xl md:text-4xl font-bold">Scan a repository</h2>
               <p className="text-muted-foreground mt-3">
-                Upload a ZIP or import a public GitHub repository. Strip <span className="font-mono text-foreground/80">node_modules</span>, <span className="font-mono text-foreground/80">dist</span>, and <span className="font-mono text-foreground/80">build</span> folders for the smallest, cleanest scan.
+                Connect GitHub, import a public repository URL, or upload a ZIP. Strip <span className="font-mono text-foreground/80">node_modules</span>, <span className="font-mono text-foreground/80">dist</span>, and <span className="font-mono text-foreground/80">build</span> folders for the smallest, cleanest scan.
               </p>
             </div>
 

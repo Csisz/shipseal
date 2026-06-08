@@ -1,24 +1,39 @@
-import { useCallback, useState, useRef } from 'react';
-import { Github, Upload, FileArchive, X } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useMemo, useState, useRef } from 'react';
+import { Github, Upload, FileArchive, X, Plug } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { formatFileSize, validateZipUpload } from '@/lib/uploadValidation';
+import { parseGitHubUrl } from '@/lib/github/parseGitHubUrl';
+import { getGitHubAppClientConfig, type GitHubAppClientConfig } from '@/lib/githubApp/config';
 
 interface Props {
   onFile: (file: File) => void;
   onGitHubImport?: (url: string, branch?: string) => void;
   disabled?: boolean;
+  githubAppConfig?: GitHubAppClientConfig;
 }
 
-export function UploadDropzone({ onFile, onGitHubImport, disabled }: Props) {
-  const [mode, setMode] = useState<'zip' | 'github'>('zip');
+export function UploadDropzone({ onFile, onGitHubImport, disabled, githubAppConfig }: Props) {
+  const appConfig = useMemo(() => githubAppConfig || getGitHubAppClientConfig(), [githubAppConfig]);
+  const [mode, setMode] = useState<'github-app' | 'github' | 'zip'>('github-app');
   const [dragging, setDragging] = useState(false);
   const [selected, setSelected] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [githubUrl, setGithubUrl] = useState('');
   const [githubBranch, setGithubBranch] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const detectedRepository = useMemo(() => {
+    if (!githubUrl.trim()) return '';
+    try {
+      const parsed = parseGitHubUrl(githubUrl);
+      return `${parsed.owner}/${parsed.repo}`;
+    } catch {
+      return '';
+    }
+  }, [githubUrl]);
 
   const handle = useCallback((f: File) => {
     const validation = validateZipUpload(f);
@@ -38,18 +53,68 @@ export function UploadDropzone({ onFile, onGitHubImport, disabled }: Props) {
     if (f) handle(f);
   };
 
+  const connectGitHub = () => {
+    if (!appConfig.isConfigured) return;
+    window.open(appConfig.installUrl, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div className="w-full">
-      <div className="glass rounded-2xl p-2 mb-4 grid grid-cols-2 gap-2">
-        <Button type="button" variant={mode === 'zip' ? 'default' : 'ghost'} onClick={() => { setMode('zip'); setError(null); }} disabled={disabled}>
-          <FileArchive className="h-4 w-4 mr-2" /> Upload ZIP
-        </Button>
-        <Button type="button" variant={mode === 'github' ? 'default' : 'ghost'} onClick={() => { setMode('github'); setError(null); }} disabled={disabled}>
-          <Github className="h-4 w-4 mr-2" /> Import from GitHub
-        </Button>
+      <div className="mb-4 grid md:grid-cols-3 gap-3">
+        <SourceOption
+          active={mode === 'github-app'}
+          icon={<Plug className="h-4 w-4" />}
+          title="Connect GitHub"
+          description="Best for selecting repositories and creating Pull Requests."
+          recommended
+          disabled={disabled}
+          onClick={() => { setMode('github-app'); setError(null); }}
+        />
+        <SourceOption
+          active={mode === 'github'}
+          icon={<Github className="h-4 w-4" />}
+          title="Import public GitHub URL"
+          description="Good for public repo scans. PR creation requires connection later."
+          disabled={disabled}
+          onClick={() => { setMode('github'); setError(null); }}
+        />
+        <SourceOption
+          active={mode === 'zip'}
+          icon={<FileArchive className="h-4 w-4" />}
+          title="Upload ZIP"
+          description="Best for local/private review without GitHub access."
+          disabled={disabled}
+          onClick={() => { setMode('zip'); setError(null); }}
+        />
       </div>
 
-      {mode === 'zip' ? (
+      {mode === 'github-app' ? (
+        <div className={cn('glass rounded-2xl p-6', disabled && 'opacity-60 pointer-events-none')}>
+          <div className="flex flex-wrap items-start gap-3 mb-5">
+            <div className="h-11 w-11 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center">
+              <Plug className="h-5 w-5 text-primary-glow" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="font-display text-lg font-semibold">Connect GitHub</div>
+              <div className="text-sm text-muted-foreground">
+                Connect before scanning so ShipSeal can later create a Pull Request for the same selected repository.
+              </div>
+              {!appConfig.isConfigured && (
+                <div className="mt-2 text-xs text-warning">
+                  GitHub App connection is not configured in this demo. Use public URL or ZIP upload.
+                </div>
+              )}
+            </div>
+            <Button type="button" variant="outline" disabled={disabled || !appConfig.isConfigured} onClick={connectGitHub}>
+              <Plug className="h-4 w-4 mr-2" /> Connect GitHub
+            </Button>
+          </div>
+          <label className="block">
+            <span className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Select repository</span>
+            <Input aria-label="Select repository" disabled placeholder="Connect GitHub to list repositories" />
+          </label>
+        </div>
+      ) : mode === 'zip' ? (
         <label
           htmlFor="agentready-file"
           onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
@@ -93,7 +158,7 @@ export function UploadDropzone({ onFile, onGitHubImport, disabled }: Props) {
             </div>
             <div>
               <div className="font-display text-lg font-semibold">Import a public GitHub repo</div>
-              <div className="text-sm text-muted-foreground">Paste a public GitHub repository URL or upload a ZIP.</div>
+              <div className="text-sm text-muted-foreground">Paste a public GitHub repository URL.</div>
             </div>
           </div>
           <div className="space-y-3">
@@ -110,6 +175,11 @@ export function UploadDropzone({ onFile, onGitHubImport, disabled }: Props) {
               disabled={disabled}
             />
           </div>
+          {detectedRepository && (
+            <div className="mt-3 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-foreground/85">
+              Detected repository: {detectedRepository}
+            </div>
+          )}
           <div className="mt-4 text-xs text-muted-foreground/80 space-y-1">
             <div>Examples: <span className="font-mono text-foreground/80">https://github.com/Csisz/shipseal</span>, <span className="font-mono text-foreground/80">github.com/Csisz/shipseal</span>, or a <span className="font-mono text-foreground/80">.git</span> URL.</div>
             <div>Only public GitHub repositories are supported in the local MVP. Private repositories are not supported.</div>
@@ -153,5 +223,45 @@ export function UploadDropzone({ onFile, onGitHubImport, disabled }: Props) {
         </div>
       )}
     </div>
+  );
+}
+
+function SourceOption({
+  active,
+  icon,
+  title,
+  description,
+  recommended = false,
+  disabled,
+  onClick,
+}: {
+  active: boolean;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  recommended?: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={cn(
+        'min-h-32 text-left rounded-xl border p-4 transition-colors bg-secondary/25 hover:border-primary/40',
+        active ? 'border-primary/50 bg-primary/10' : 'border-border/60',
+        disabled && 'opacity-60 pointer-events-none'
+      )}
+    >
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <span className="text-primary-glow">{icon}</span>
+        <span>{title}</span>
+        {recommended && (
+          <span className="ml-auto rounded-full border border-success/40 px-2 py-0.5 text-[10px] text-success">Recommended</span>
+        )}
+      </div>
+      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{description}</p>
+    </button>
   );
 }

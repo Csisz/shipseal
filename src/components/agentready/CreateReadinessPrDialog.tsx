@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { getGitHubAppClientConfig, type GitHubAppClientConfig } from '@/lib/githubApp/config';
+import { buildGitHubConnectionFromReport, type GitHubConnectionState } from '@/lib/githubConnection/types';
 import type { ReadinessReport } from '@/lib/types';
 import type { ReadinessFixPackFile } from '@/lib/readinessFixPack';
 import { buildReadinessPrPlan } from '@/lib/readinessPr';
@@ -32,14 +33,16 @@ interface Props {
   report: ReadinessReport;
   files: ReadinessFixPackFile[];
   githubAppConfig?: GitHubAppClientConfig;
+  githubConnection?: GitHubConnectionState;
 }
 
-export function CreateReadinessPrDialog({ report, files, githubAppConfig }: Props) {
+export function CreateReadinessPrDialog({ report, files, githubAppConfig, githubConnection }: Props) {
   const [open, setOpen] = useState(false);
   const plan = useMemo(() => buildReadinessPrPlan(), []);
   const inferred = useMemo(() => inferGitHubRepo(report), [report]);
   const prFiles = useMemo(() => files.filter(file => plan.files.some(planned => planned.path === file.path)), [files, plan.files]);
   const appConfig = useMemo(() => githubAppConfig || getGitHubAppClientConfig(), [githubAppConfig]);
+  const connection = useMemo(() => githubConnection || buildGitHubConnectionFromReport(report), [githubConnection, report]);
   const [owner, setOwner] = useState(inferred.owner);
   const [repo, setRepo] = useState(inferred.repo);
   const [baseBranch, setBaseBranch] = useState(report.source.githubDefaultBranch || report.source.githubBranch || '');
@@ -52,6 +55,7 @@ export function CreateReadinessPrDialog({ report, files, githubAppConfig }: Prop
 
   const hasWorkflowFile = prFiles.some(file => file.path === '.github/workflows/ci.yml');
   const currentRepository = inferred.owner && inferred.repo ? `${inferred.owner}/${inferred.repo}` : '';
+  const connectedRepository = connection.owner && connection.repo ? `${connection.owner}/${connection.repo}` : '';
 
   const resetTransientState = () => {
     setGithubToken('');
@@ -155,46 +159,42 @@ export function CreateReadinessPrDialog({ report, files, githubAppConfig }: Prop
             <section className="rounded-xl border border-border/60 bg-secondary/25 p-4">
               <div className="text-xs font-mono uppercase tracking-wider text-primary-glow mb-3">Step 2: GitHub access</div>
               <div className="rounded-xl border border-primary/30 bg-primary/10 p-4">
-                <div className="flex flex-wrap items-start gap-3">
-                  <Github className="h-4 w-4 text-primary-glow mt-1" />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="font-display font-semibold">Connect GitHub</div>
-                      <Badge variant="outline" className="border-success/50 text-success">Recommended</Badge>
+                {connection.canCreatePullRequest && connectedRepository ? (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Github className="h-4 w-4 text-primary-glow" />
+                    <div className="min-w-0 flex-1">
+                      <div className="font-display font-semibold">Connected repository: {connectedRepository}</div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        ShipSeal can create a Readiness PR for this connected repository after you review the files.
+                      </p>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Best for real use. Install ShipSeal on selected repositories and create readiness pull requests without pasting tokens.
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Install the {appConfig.appName} GitHub App on selected repositories. After installation, return to ShipSeal to select a repository.
-                    </p>
-                    {!appConfig.isConfigured && (
-                      <p className="text-xs text-warning mt-2">GitHub App install is not configured in this demo.</p>
-                    )}
+                    <Badge variant="outline" className="border-success/50 text-success">Connected</Badge>
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={!appConfig.isConfigured}
-                    onClick={connectGitHub}
-                    className="border-border/60"
-                  >
-                    <Plug className="h-3.5 w-3.5 mr-1.5" /> Connect GitHub
-                  </Button>
-                </div>
-                <div className="mt-4 grid sm:grid-cols-[1fr_auto] gap-3 sm:items-end">
-                  <label className="block">
-                    <span className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Select repository</span>
-                    <Input
-                      aria-label="Select repository"
-                      disabled
-                      placeholder="Connect GitHub to list your repositories"
-                    />
-                  </label>
-                  <Badge variant="outline" className="w-fit border-border/70 text-[10px]">Coming soon</Badge>
-                </div>
-                {currentRepository && (
-                  <p className="mt-3 text-xs text-foreground/85">Current repository: {currentRepository}</p>
+                ) : (
+                  <div className="flex flex-wrap items-start gap-3">
+                    <Github className="h-4 w-4 text-primary-glow mt-1" />
+                    <div className="min-w-0 flex-1">
+                      <div className="font-display font-semibold">Connect GitHub before creating a Pull Request.</div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Public URL and ZIP scans can still export reports and fix packs. PR creation requires a connected GitHub repository.
+                      </p>
+                      {currentRepository && (
+                        <p className="mt-2 text-xs text-foreground/85">Current repository: {currentRepository}</p>
+                      )}
+                      {!appConfig.isConfigured && (
+                        <p className="text-xs text-warning mt-2">GitHub App install is not configured in this demo.</p>
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={!appConfig.isConfigured}
+                      onClick={connectGitHub}
+                      className="border-border/60"
+                    >
+                      <Plug className="h-3.5 w-3.5 mr-1.5" /> Connect GitHub
+                    </Button>
+                  </div>
                 )}
               </div>
 
@@ -221,7 +221,7 @@ export function CreateReadinessPrDialog({ report, files, githubAppConfig }: Prop
                             <Badge variant="outline" className="border-border/70 text-[10px]">Developer/test mode</Badge>
                           </div>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Developer/test mode. Token is used only for this request and is not stored.
+                            Developer/test mode. For production use, connect GitHub.
                           </p>
                         </div>
                         <div className="grid sm:grid-cols-2 gap-3">
@@ -262,9 +262,8 @@ export function CreateReadinessPrDialog({ report, files, githubAppConfig }: Prop
               </Accordion>
 
               <div className="mt-4 flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-background/30 px-3 py-2 text-xs text-muted-foreground">
-                <Plug className="h-3.5 w-3.5 text-primary-glow" />
-                <span>Recommended future flow: Connect GitHub instead of pasting a token.</span>
-                <Badge variant="outline" className="border-border/70 text-[10px]">Connect GitHub - planned</Badge>
+                <ShieldCheck className="h-3.5 w-3.5 text-primary-glow" />
+                <span>For production use, connect GitHub at repository source selection. Temporary tokens are for developer testing only.</span>
               </div>
               <label className="mt-4 flex items-start gap-3 text-sm text-foreground/90">
                 <Checkbox
