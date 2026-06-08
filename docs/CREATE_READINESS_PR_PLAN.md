@@ -68,6 +68,8 @@ The modal reflects shared GitHub connection state:
 - Public GitHub URL: scan/export only; PR creation requires connecting GitHub or using Advanced temporary token mode.
 - ZIP upload: local scan/export only; PR creation requires connecting GitHub or using Advanced temporary token mode.
 
+GitHub App PR creation is not implemented yet. Connected repository state is prepared so the next milestone can use an installation token for branch/file/PR writes. Until then, Advanced temporary token mode remains available for developer testing.
+
 The Advanced token form can reduce manual entry by auto-filling repository owner and name from GitHub import metadata, a parsed GitHub URL such as `https://github.com/Csisz/shipseal`, or a repository name already shaped as `owner/repo`. ZIP uploads can still fill those fields manually.
 
 Base branch is optional in the UI. If the GitHub import later includes default branch metadata, ShipSeal can prefill it. If it is left empty, `/api/create-readiness-pr` resolves the repository default branch through the GitHub API before creating the branch.

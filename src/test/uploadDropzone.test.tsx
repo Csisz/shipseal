@@ -66,4 +66,36 @@ describe('UploadDropzone GitHub import copy', () => {
       'noopener,noreferrer'
     );
   });
+
+  it('renders repository dropdown with loaded GitHub App repositories and selects a repo', () => {
+    const onSelect = vi.fn();
+
+    render(
+      <UploadDropzone
+        onFile={vi.fn()}
+        onGitHubImport={vi.fn()}
+        githubInstallationId="12345"
+        repositoryListStatus="loaded"
+        repositories={[{
+          owner: 'Csisz',
+          name: 'shipseal',
+          fullName: 'Csisz/shipseal',
+          defaultBranch: 'main',
+          private: false,
+          htmlUrl: 'https://github.com/Csisz/shipseal',
+        }]}
+        onGitHubAppRepositorySelect={onSelect}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText('Select repository'), { target: { value: 'Csisz/shipseal' } });
+
+    expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({
+      owner: 'Csisz',
+      name: 'shipseal',
+      fullName: 'Csisz/shipseal',
+      defaultBranch: 'main',
+      private: false,
+    }));
+  });
 });

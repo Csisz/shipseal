@@ -167,6 +167,9 @@ export function CreateReadinessPrDialog({ report, files, githubAppConfig, github
                       <p className="text-xs text-muted-foreground mt-1">
                         ShipSeal can create a Readiness PR for this connected repository after you review the files.
                       </p>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        GitHub App PR creation is coming next. Temporary token mode is still available for developer testing.
+                      </p>
                     </div>
                     <Badge variant="outline" className="border-success/50 text-success">Connected</Badge>
                   </div>

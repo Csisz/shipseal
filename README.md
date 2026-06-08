@@ -163,9 +163,11 @@ Current MVP:
 - public GitHub import for scan inputs,
 - temporary token mode for developer/testing PR creation,
 - `Connect GitHub` opens the GitHub App install page when frontend app env is configured,
+- `/api/github-app/callback` reads `installation_id` and redirects to `/?githubInstallationId=...#scan`,
+- `/api/github-app/repositories` returns `not_configured` without server credentials and can list repositories when GitHub App server env is configured,
 - shared GitHub connection state tracks source mode, owner/repo, repository listing capability, and PR creation capability,
 - no stored tokens,
-- no callback processing or repository listing yet.
+- no GitHub App token based PR creation yet.
 
 Frontend demo env:
 
@@ -202,6 +204,8 @@ Repository permissions:
 - Workflows: read/write optional, only if ShipSeal writes CI workflow files
 
 Install the app only on selected repositories. For a Vercel demo, configure `VITE_GITHUB_APP_SLUG` and optionally `VITE_GITHUB_APP_INSTALL_URL`, then redeploy. Server-side values such as `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, and `GITHUB_APP_WEBHOOK_SECRET` are reserved for the next milestone that handles callback state and repository listing.
+
+For repository listing on Vercel, set `GITHUB_APP_ID` and `GITHUB_APP_PRIVATE_KEY` as server-side environment variables. Keep the private key out of frontend env vars. If the private key is stored with escaped newlines, use `\n`; ShipSeal normalizes it before creating the GitHub App JWT. Callback URL should be `https://YOUR_DOMAIN/api/github-app/callback`.
 
 ## MVP Validation Offer
 

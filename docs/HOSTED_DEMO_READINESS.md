@@ -32,12 +32,33 @@ No environment variables are required for the core local-first scan/export demo.
 Optional:
 
 - `CONTACT_WEBHOOK_URL`: used by `POST /api/audit-request` to forward founder-reviewed audit requests to a configured webhook.
+- `VITE_GITHUB_APP_SLUG`: enables the source-level Connect GitHub install URL.
+- `VITE_GITHUB_APP_INSTALL_URL`: optional explicit GitHub App install URL.
+- `VITE_GITHUB_APP_NAME`: optional display name for the GitHub App.
+- `GITHUB_APP_ID`: server-side GitHub App id for repository listing.
+- `GITHUB_APP_PRIVATE_KEY`: server-side GitHub App private key for repository listing.
+- `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, `GITHUB_APP_WEBHOOK_SECRET`: reserved for later callback/session/webhook hardening.
 
 If `CONTACT_WEBHOOK_URL` is configured, the in-app audit request form validates the payload and forwards it server-side. If it is not configured, the form still validates input but the endpoint returns `503` with `Audit request form is not configured yet.`
 
-Set the variable in Vercel Dashboard -> Project Settings -> Environment Variables. Redeploy Production after changing it.
+Set variables in Vercel Dashboard -> Project Settings -> Environment Variables. Redeploy Production after changing them.
 
-Do not add OpenAI, Anthropic, GitHub, Stripe, or private API keys to the client-side app. The current demo does not need client-side secrets.
+Do not add OpenAI, Anthropic, GitHub private keys, Stripe, or private API keys to the client-side app. `GITHUB_APP_PRIVATE_KEY` must be server-side only. If Vercel stores the private key on one line, preserve newlines as `\n`; ShipSeal normalizes escaped newlines before creating the GitHub App JWT.
+
+## GitHub App Callback And Repository Listing
+
+For a hosted GitHub App demo:
+
+1. Create a GitHub App in GitHub Developer settings.
+2. Set Callback URL to `https://YOUR_DOMAIN/api/github-app/callback`.
+3. Give repository permissions: Metadata read, Contents read/write, Pull requests read/write, and Workflows read/write only if workflow files are written.
+4. Install only on selected repositories.
+5. Set `VITE_GITHUB_APP_SLUG` or `VITE_GITHUB_APP_INSTALL_URL`.
+6. Set `GITHUB_APP_ID` and `GITHUB_APP_PRIVATE_KEY` when repository listing should call GitHub.
+
+After install, GitHub returns to `/api/github-app/callback?installation_id=...&setup_action=...`. ShipSeal redirects to `/?githubInstallationId=...&githubSetupAction=...#scan`, then calls `/api/github-app/repositories?installationId=...`.
+
+If server credentials are missing, the repository selector shows that listing is not configured. If credentials are present, ShipSeal lists `{ owner, name, fullName, defaultBranch, private, htmlUrl }` metadata. Private repository archive scanning through GitHub App and GitHub App token based PR creation are not implemented yet.
 
 ## Vercel Demo Deployment
 
@@ -85,7 +106,8 @@ Do not add OpenAI, Anthropic, GitHub, Stripe, or private API keys to the client-
 - Server-side AI calls.
 - Persistent server storage.
 - Private GitHub App import.
-- OAuth.
+- GitHub App private repository archive scanning.
+- GitHub App token based PR creation.
 - Database-backed audit history.
 
 ## Demo Flow

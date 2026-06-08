@@ -13,10 +13,13 @@ import type { ProjectIntake } from '@/lib/intake';
 import { createDefaultProjectIntake, hasMeaningfulProjectContext } from '@/lib/intake';
 import { parseGitHubUrl } from '@/lib/github/parseGitHubUrl';
 import { Button } from '@/components/ui/button';
+import type { GitHubAppRepository, GitHubAppRepositoryListStatus } from '@/lib/githubApp/types';
+import { createConnectedGitHubConnection, type GitHubConnectionState } from '@/lib/githubConnection/types';
 
 type PendingSource =
   | { type: 'zip'; file: File; projectName: string }
-  | { type: 'github'; url: string; branch?: string; projectName: string };
+  | { type: 'github'; url: string; branch?: string; projectName: string }
+  | { type: 'github-app'; url: string; branch?: string; projectName: string; connection: GitHubConnectionState; isPrivate?: boolean };
 
 const ResultDashboard = lazy(() => import('@/components/agentready/ResultDashboard').then(module => ({ default: module.ResultDashboard })));
 
@@ -47,6 +50,11 @@ const Index = () => {
   const [pendingIntake, setPendingIntake] = useState<ProjectIntake>(() => createDefaultProjectIntake());
   const [submittedIntake, setSubmittedIntake] = useState<ProjectIntake | undefined>();
   const [submittedIntakeSkipped, setSubmittedIntakeSkipped] = useState(false);
+  const [githubInstallationId, setGithubInstallationId] = useState('');
+  const [githubSetupAction, setGithubSetupAction] = useState('');
+  const [repositoryListStatus, setRepositoryListStatus] = useState<GitHubAppRepositoryListStatus>('idle');
+  const [githubRepositories, setGithubRepositories] = useState<GitHubAppRepository[]>([]);
+  const [repositoryListMessage, setRepositoryListMessage] = useState('');
   const savedReportKey = useRef<string | null>(null);
   const lastError = useRef<string | null>(null);
   const scanSectionRef = useRef<HTMLDivElement>(null);
@@ -56,6 +64,42 @@ const Index = () => {
 
   useEffect(() => {
     setHistory(getScanHistory());
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const installationId = params.get('githubInstallationId') || '';
+    const setupAction = params.get('githubSetupAction') || '';
+    if (!installationId) return;
+
+    setGithubInstallationId(installationId);
+    setGithubSetupAction(setupAction);
+    setRepositoryListStatus('loading');
+    setRepositoryListMessage('');
+
+    fetch(`/api/github-app/repositories?installationId=${encodeURIComponent(installationId)}`)
+      .then(async response => {
+        const payload = await response.json().catch(() => null);
+        if (response.ok && payload?.status === 'ok' && Array.isArray(payload.repositories)) {
+          setGithubRepositories(payload.repositories);
+          setRepositoryListStatus('loaded');
+          return;
+        }
+        if (payload?.status === 'not_configured') {
+          setGithubRepositories([]);
+          setRepositoryListStatus('not_configured');
+          setRepositoryListMessage(payload.message || 'GitHub App server credentials are not configured yet.');
+          return;
+        }
+        setGithubRepositories([]);
+        setRepositoryListStatus('error');
+        setRepositoryListMessage(payload?.message || 'Repository listing is not available yet.');
+      })
+      .catch(() => {
+        setGithubRepositories([]);
+        setRepositoryListStatus('error');
+        setRepositoryListMessage('Repository listing is not available yet.');
+      });
   }, []);
 
   useEffect(() => {
@@ -130,6 +174,29 @@ const Index = () => {
     setSubmittedIntakeSkipped(false);
   }, []);
 
+  const handleGitHubAppRepository = useCallback((repository: GitHubAppRepository) => {
+    setSampleReport(null);
+    savedReportKey.current = null;
+    lastError.current = null;
+    const connection = createConnectedGitHubConnection({
+      owner: repository.owner,
+      repo: repository.name,
+      defaultBranch: repository.defaultBranch,
+      installationId: githubInstallationId,
+    });
+    setPendingSource({
+      type: 'github-app',
+      url: `https://github.com/${repository.fullName}`,
+      branch: repository.defaultBranch,
+      projectName: repository.name,
+      connection,
+      isPrivate: repository.private,
+    });
+    setPendingIntake(createDefaultProjectIntake(repository.name));
+    setSubmittedIntake(undefined);
+    setSubmittedIntakeSkipped(false);
+  }, [githubInstallationId]);
+
   const startPendingScan = useCallback(() => {
     if (!pendingSource) return;
     const hasProjectContext = hasMeaningfulProjectContext(pendingIntake, pendingSource.projectName);
@@ -143,6 +210,21 @@ const Index = () => {
 
     if (pendingSource.type === 'zip') {
       void scan.startScan(pendingSource.file);
+    } else if (pendingSource.type === 'github-app') {
+      if (pendingSource.isPrivate) {
+        toast({
+          title: 'Private repository scan not available yet',
+          description: 'Private repository archive scanning through GitHub App is not implemented yet.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      void scan.startGitHubScan(pendingSource.url, pendingSource.branch, {
+        githubOwner: pendingSource.connection.owner,
+        githubRepo: pendingSource.connection.repo,
+        githubDefaultBranch: pendingSource.connection.defaultBranch,
+        githubInstallationId: pendingSource.connection.installationId,
+      });
     } else {
       void scan.startGitHubScan(pendingSource.url, pendingSource.branch);
     }
@@ -227,7 +309,15 @@ const Index = () => {
                   <div className="mb-5">
                     <FlowSteps activeStep={1} />
                   </div>
-                  <UploadDropzone onFile={handleFile} onGitHubImport={handleGitHubImport} />
+                  <UploadDropzone
+                    onFile={handleFile}
+                    onGitHubImport={handleGitHubImport}
+                    githubInstallationId={githubInstallationId}
+                    repositoryListStatus={repositoryListStatus}
+                    repositories={githubRepositories}
+                    repositoryListMessage={repositoryListMessage || (githubSetupAction ? `GitHub setup action: ${githubSetupAction}` : '')}
+                    onGitHubAppRepositorySelect={handleGitHubAppRepository}
+                  />
                   {scan.status === 'cancelled' && (
                     <div className="mt-4 text-center text-sm text-muted-foreground">Scan cancelled.</div>
                   )}

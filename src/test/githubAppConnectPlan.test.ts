@@ -1,15 +1,17 @@
 import { existsSync, readFileSync } from 'node:fs';
+import { generateKeyPairSync } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
 import startHandler from '../../api/github-app/start';
 import callbackHandler from '../../api/github-app/callback';
-import repositoriesHandler from '../../api/github-app/repositories';
+import repositoriesHandler, { listInstallationRepositories } from '../../api/github-app/repositories';
 
 function createResponse() {
   return {
     statusCode: 0,
     body: '',
+    headers: {} as Record<string, string>,
     setHeader: vi.fn(),
-    end(value: string) {
+    end(value = '') {
       this.body = value;
     },
     json() {
@@ -19,20 +21,110 @@ function createResponse() {
 }
 
 describe('GitHub App Connect plan', () => {
-  it.each([
-    ['start', startHandler],
-    ['callback', callbackHandler],
-    ['repositories', repositoriesHandler],
-  ])('/api/github-app/%s returns a planned not implemented response', async (_name, handler) => {
+  it('/api/github-app/start returns a planned not implemented response', async () => {
     const res = createResponse();
 
-    await handler({ method: 'GET' } as never, res as never);
+    await startHandler({ method: 'GET' } as never, res as never);
 
     expect(res.statusCode).toBe(501);
     expect(res.json()).toEqual({
       status: 'not_implemented',
       message: 'GitHub App connection is planned. Use temporary token mode for now.',
     });
+  });
+
+  it('/api/github-app/callback rejects missing installation_id', async () => {
+    const res = createResponse();
+
+    await callbackHandler({ method: 'GET', url: '/api/github-app/callback' } as never, res as never);
+
+    expect(res.statusCode).toBe(400);
+    expect(res.json()).toEqual({
+      status: 'invalid_request',
+      message: 'GitHub App callback is missing a valid installation_id.',
+    });
+  });
+
+  it('/api/github-app/callback redirects installation_id back to the frontend scan flow', async () => {
+    const res = createResponse();
+
+    await callbackHandler({
+      method: 'GET',
+      url: '/api/github-app/callback?installation_id=12345&setup_action=install',
+    } as never, res as never);
+
+    expect(res.statusCode).toBe(302);
+    expect(res.setHeader).toHaveBeenCalledWith('Location', '/?githubInstallationId=12345&githubSetupAction=install#scan');
+  });
+
+  it('/api/github-app/repositories validates installationId and reports missing server env', async () => {
+    const missing = createResponse();
+    await repositoriesHandler({ method: 'GET', url: '/api/github-app/repositories' } as never, missing as never);
+    expect(missing.statusCode).toBe(400);
+    expect(missing.json()).toMatchObject({ status: 'invalid_request' });
+
+    const notConfigured = await listInstallationRepositories('12345', { env: {} as NodeJS.ProcessEnv });
+    expect(notConfigured).toEqual({
+      status: 501,
+      body: {
+        status: 'not_configured',
+        message: 'GitHub App server credentials are not configured yet.',
+      },
+    });
+  });
+
+  it('/api/github-app/repositories returns minimized repositories with mocked GitHub API calls', async () => {
+    const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
+    const privatePem = privateKey.export({ type: 'pkcs1', format: 'pem' }).toString();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: async () => ({ token: 'installation-token' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          repositories: [
+            {
+              owner: { login: 'Csisz' },
+              name: 'shipseal',
+              full_name: 'Csisz/shipseal',
+              default_branch: 'main',
+              private: false,
+              html_url: 'https://github.com/Csisz/shipseal',
+            },
+          ],
+        }),
+      });
+
+    const result = await listInstallationRepositories('12345', {
+      fetcher: fetchMock as never,
+      now: () => new Date(Date.UTC(2026, 5, 8, 8, 0)),
+      env: {
+        GITHUB_APP_ID: '999',
+        GITHUB_APP_PRIVATE_KEY: privatePem,
+      } as NodeJS.ProcessEnv,
+    });
+
+    expect(result).toEqual({
+      status: 200,
+      body: {
+        status: 'ok',
+        repositories: [{
+          owner: 'Csisz',
+          name: 'shipseal',
+          fullName: 'Csisz/shipseal',
+          defaultBranch: 'main',
+          private: false,
+          htmlUrl: 'https://github.com/Csisz/shipseal',
+        }],
+      },
+    });
+    expect(fetchMock).toHaveBeenNthCalledWith(1, 'https://api.github.com/app/installations/12345/access_tokens', expect.objectContaining({ method: 'POST' }));
+    expect(fetchMock).toHaveBeenNthCalledWith(2, 'https://api.github.com/installation/repositories', expect.objectContaining({ method: 'GET' }));
   });
 
   it('documents the GitHub App architecture and README roadmap', () => {

@@ -242,6 +242,7 @@ describe('SuggestedReadinessFixPack', () => {
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByText('Connected repository: Csisz/shipseal')).toBeInTheDocument();
     expect(within(dialog).getByText('Connected')).toBeInTheDocument();
+    expect(within(dialog).getByText(/GitHub App PR creation is coming next/i)).toBeInTheDocument();
     expect(within(dialog).queryByText(/Connect GitHub before creating a Pull Request/i)).not.toBeInTheDocument();
     expect(within(dialog).getByText('Advanced: use a temporary token')).toBeInTheDocument();
   });

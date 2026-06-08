@@ -112,6 +112,7 @@ export interface ScanSourceMetadata {
   githubRepo?: string;
   githubBranch?: string;
   githubDefaultBranch?: string;
+  githubInstallationId?: string;
   sourceUrl?: string;
 }
 

@@ -1,7 +1,7 @@
 import type { ReadinessReport, ScanSourceMetadata } from '@/lib/types';
 import { parseGitHubUrl } from '@/lib/github/parseGitHubUrl';
 
-export type GitHubConnectionStatus = 'not_configured' | 'not_connected' | 'connected' | 'error';
+export type GitHubConnectionStatus = 'not_configured' | 'not_connected' | 'installation_detected' | 'connected' | 'error';
 export type RepositorySourceMode = 'github-app' | 'public-url' | 'zip-upload';
 
 export interface GitHubConnectionState {
@@ -54,6 +54,18 @@ export function createConnectedGitHubConnection(input: {
   };
 }
 
+export function createInstallationDetectedConnection(input: {
+  installationId: string;
+}): GitHubConnectionState {
+  return {
+    connectionStatus: 'installation_detected',
+    sourceMode: 'github-app',
+    installationId: input.installationId,
+    canCreatePullRequest: false,
+    canListRepositories: false,
+  };
+}
+
 export function buildGitHubConnectionFromReport(report: ReadinessReport): GitHubConnectionState {
   return buildGitHubConnectionFromSource(report.source);
 }
@@ -62,6 +74,14 @@ export function buildGitHubConnectionFromSource(source: ScanSourceMetadata): Git
   if (source.sourceType === 'zip-upload') return createZipUploadConnection();
 
   const ownerRepo = inferOwnerRepo(source);
+  if (source.githubInstallationId && ownerRepo.owner && ownerRepo.repo) {
+    return createConnectedGitHubConnection({
+      owner: ownerRepo.owner,
+      repo: ownerRepo.repo,
+      defaultBranch: source.githubDefaultBranch || source.githubBranch,
+      installationId: source.githubInstallationId,
+    });
+  }
   return createPublicUrlConnection(ownerRepo.owner, ownerRepo.repo, source.githubDefaultBranch || source.githubBranch);
 }
 

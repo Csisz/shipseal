@@ -89,6 +89,7 @@ Planned production configuration:
 - `GITHUB_APP_CALLBACK_URL`
 
 The server-side values are documented for the next milestone. The current MVP does not exchange callback codes, generate installation tokens, store sessions, or list repositories from GitHub.
+The repository listing MVP now handles callback `installation_id`, calls `/api/github-app/repositories?installationId=...`, and returns `not_configured` when server credentials are missing. When server credentials are present, the endpoint is structured to generate a GitHub App JWT, request an installation access token server-side, and return minimized repository metadata only.
 
 ## Create a GitHub App For Local/Demo Testing
 
@@ -98,7 +99,7 @@ Use GitHub Developer settings to create a demo app:
 2. Create a new GitHub App.
 3. Set App name to something like `ShipSeal Demo`.
 4. Set Homepage URL to the Vercel demo URL or local development URL.
-5. Set Callback URL to the future callback endpoint, for example `https://your-demo.vercel.app/api/github-app/callback` or `http://localhost:8080/api/github-app/callback` for local experiments.
+5. Set Callback URL to `https://YOUR_DOMAIN/api/github-app/callback`. For local Vercel dev experiments, use the matching `vercel dev` URL plus `/api/github-app/callback`.
 6. Configure repository permissions:
    - Metadata: read
    - Contents: read/write
@@ -108,7 +109,9 @@ Use GitHub Developer settings to create a demo app:
 8. Copy the app slug from the GitHub App URL and set `VITE_GITHUB_APP_SLUG`.
 9. Optionally set `VITE_GITHUB_APP_INSTALL_URL` if the demo should use a fixed install URL.
 
-For Vercel demo testing, add the frontend env vars in Vercel Project Settings -> Environment Variables, then redeploy. Add the server-side GitHub App env vars later when callback handling and repository listing are implemented.
+For Vercel demo testing, add the frontend env vars in Vercel Project Settings -> Environment Variables, then redeploy. Add `GITHUB_APP_ID` and `GITHUB_APP_PRIVATE_KEY` when repository listing should call GitHub for real. Store the private key only as a server-side Vercel env var. If Vercel stores the key on one line, preserve newlines as `\n`; ShipSeal normalizes escaped newlines before signing the GitHub App JWT.
+
+Local frontend-only Vite can open the install URL and read callback query params, but API routes such as callback and repository listing require `vercel dev` or a deployed Vercel function.
 
 ## MVP Skeleton Endpoints
 
@@ -118,6 +121,8 @@ The current codebase reserves these API route locations:
 - `GET /api/github-app/callback`
 - `GET /api/github-app/repositories`
 
-They intentionally return `501 not_implemented` until the real GitHub App installation, callback, session, repository listing, and installation token logic is built.
+`/api/github-app/callback` now redirects back to `/?githubInstallationId={installation_id}&githubSetupAction={setup_action}#scan`. The installation id is not an access token; it lets the frontend request repository listing from the backend.
 
-The next milestone should turn the callback into repository listing by storing installation/session state, generating an installation access token server-side, and returning repositories available to the selected installation.
+`/api/github-app/repositories` returns `501 not_configured` without server credentials. With credentials, it requests an installation access token server-side and returns repositories as `{ owner, name, fullName, defaultBranch, private, htmlUrl }`.
+
+The next milestone should use this connected repository state for GitHub App authenticated archive scanning for private repos and GitHub App token based Readiness PR creation.

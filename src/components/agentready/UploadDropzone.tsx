@@ -7,15 +7,31 @@ import { cn } from '@/lib/utils';
 import { formatFileSize, validateZipUpload } from '@/lib/uploadValidation';
 import { parseGitHubUrl } from '@/lib/github/parseGitHubUrl';
 import { getGitHubAppClientConfig, type GitHubAppClientConfig } from '@/lib/githubApp/config';
+import type { GitHubAppRepository, GitHubAppRepositoryListStatus } from '@/lib/githubApp/types';
 
 interface Props {
   onFile: (file: File) => void;
   onGitHubImport?: (url: string, branch?: string) => void;
   disabled?: boolean;
   githubAppConfig?: GitHubAppClientConfig;
+  githubInstallationId?: string;
+  repositoryListStatus?: GitHubAppRepositoryListStatus;
+  repositories?: GitHubAppRepository[];
+  repositoryListMessage?: string;
+  onGitHubAppRepositorySelect?: (repository: GitHubAppRepository) => void;
 }
 
-export function UploadDropzone({ onFile, onGitHubImport, disabled, githubAppConfig }: Props) {
+export function UploadDropzone({
+  onFile,
+  onGitHubImport,
+  disabled,
+  githubAppConfig,
+  githubInstallationId,
+  repositoryListStatus = 'idle',
+  repositories = [],
+  repositoryListMessage,
+  onGitHubAppRepositorySelect,
+}: Props) {
   const appConfig = useMemo(() => githubAppConfig || getGitHubAppClientConfig(), [githubAppConfig]);
   const [mode, setMode] = useState<'github-app' | 'github' | 'zip'>('github-app');
   const [dragging, setDragging] = useState(false);
@@ -104,6 +120,19 @@ export function UploadDropzone({ onFile, onGitHubImport, disabled, githubAppConf
                   GitHub App connection is not configured in this demo. Use public URL or ZIP upload.
                 </div>
               )}
+              {githubInstallationId && repositoryListStatus === 'loading' && (
+                <div className="mt-2 text-xs text-primary-glow">
+                  GitHub App installation detected. Loading repositories...
+                </div>
+              )}
+              {githubInstallationId && repositoryListStatus === 'not_configured' && (
+                <div className="mt-2 text-xs text-warning">
+                  GitHub App installation detected, but repository listing is not configured in this demo.
+                </div>
+              )}
+              {repositoryListStatus === 'error' && repositoryListMessage && (
+                <div className="mt-2 text-xs text-destructive">{repositoryListMessage}</div>
+              )}
             </div>
             <Button type="button" variant="outline" disabled={disabled || !appConfig.isConfigured} onClick={connectGitHub}>
               <Plug className="h-4 w-4 mr-2" /> Connect GitHub
@@ -111,7 +140,26 @@ export function UploadDropzone({ onFile, onGitHubImport, disabled, githubAppConf
           </div>
           <label className="block">
             <span className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">Select repository</span>
-            <Input aria-label="Select repository" disabled placeholder="Connect GitHub to list repositories" />
+            {repositoryListStatus === 'loaded' && repositories.length > 0 ? (
+              <select
+                aria-label="Select repository"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                defaultValue=""
+                onChange={event => {
+                  const repository = repositories.find(repo => repo.fullName === event.target.value);
+                  if (repository) onGitHubAppRepositorySelect?.(repository);
+                }}
+              >
+                <option value="" disabled>Select repository</option>
+                {repositories.map(repository => (
+                  <option key={repository.fullName} value={repository.fullName}>
+                    {repository.fullName}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <Input aria-label="Select repository" disabled placeholder="Connect GitHub to list repositories" />
+            )}
           </label>
         </div>
       ) : mode === 'zip' ? (

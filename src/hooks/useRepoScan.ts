@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { GITHUB_PUBLIC_SCAN_STEPS, localScanEngine, ScanCancelledError, SCAN_ENGINE_STEPS } from '@/lib/scanEngine';
 import { GitHubImportError, importPublicGitHubRepo } from '@/lib/github/githubImport';
 import type { GitHubImportErrorCategory } from '@/lib/github/types';
-import type { ReadinessReport } from '@/lib/types';
+import type { ReadinessReport, ScanSourceMetadata } from '@/lib/types';
 
 export type RepoScanStatus = 'idle' | 'scanning' | 'completed' | 'failed' | 'cancelled';
 
@@ -119,7 +119,7 @@ export function useRepoScan() {
     }
   }, []);
 
-  const startGitHubScan = useCallback(async (url: string, branch?: string) => {
+  const startGitHubScan = useCallback(async (url: string, branch?: string, sourceOverride: Partial<ScanSourceMetadata> = {}) => {
     const token = scanTokenRef.current + 1;
     scanTokenRef.current = token;
     const controller = new AbortController();
@@ -152,7 +152,7 @@ export function useRepoScan() {
 
       const localToGitHubStepIndex = [2, 3, 4, 4, 5, 6, 7];
       const report = await localScanEngine.scan(
-        { file: imported.file, mode: 'github-public', source: imported.source, signal: controller.signal },
+        { file: imported.file, mode: 'github-public', source: { ...imported.source, ...sourceOverride }, signal: controller.signal },
         {
           onStepStart: (step, index) => {
             if (scanTokenRef.current !== token) return;
